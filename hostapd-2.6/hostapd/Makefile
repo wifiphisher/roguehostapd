@@ -29,6 +29,9 @@ export BINDIR ?= /usr/local/bin/
 
 -include .config
 
+hostapd_lib: CFLAGS += -fPIC
+hostapd_lib: LDFLAGS += -shared
+
 ifndef CONFIG_NO_GITVER
 # Add VERSION_STR postfix for builds from a git repository
 ifeq ($(wildcard ../.git),../.git)
@@ -1070,6 +1073,10 @@ hostapd_cli: $(OBJS_c)
 	$(Q)$(CC) $(LDFLAGS) -o hostapd_cli $(OBJS_c) $(LIBS_c)
 	@$(E) "  LD " $@
 
+hostapd_lib: $(BCHECK) $(OBJS)
+	$(Q)$(CC) $(LDFLAGS) -o libhostapd.so $(OBJS) $(LIBS)
+	@$(E) "  LD " $@
+
 NOBJS = nt_password_hash.o ../src/crypto/ms_funcs.o $(SHA1OBJS)
 NOBJS += ../src/utils/common.o
 ifdef NEED_RC4
@@ -1114,7 +1121,7 @@ lcov-html:
 
 clean:
 	$(MAKE) -C ../src clean
-	rm -f core *~ *.o hostapd hostapd_cli nt_password_hash hlr_auc_gw
+	rm -f core *~ *.o hostapd hostapd_cli nt_password_hash hlr_auc_gw libhostapd.so
 	rm -f *.d *.gcno *.gcda *.gcov
 	rm -f lcov.info
 	rm -rf lcov-html
