@@ -4,7 +4,7 @@ This module was made to wrap the hostapd
 """
 
 import os
-import multiprocessing
+import threading
 import ctypes
 import hostapd_constants
 
@@ -83,7 +83,8 @@ class Hostapd(object):
         Contruct the hostapd object
         """
 
-        self.hostapd_process = None
+        self.hostapd_thread = None
+        self.hostapd_lib = None
 
     def start(self):
         """
@@ -94,30 +95,30 @@ class Hostapd(object):
         exe_path = os.path.join(work_dir, hostapd_constants.HOSTAPD_EXE_PATH)
 
         config_path = hostapd_constants.HOSTAPD_CONF_PATH
-        str_arr_type = ctypes.c_char_p * 3
+        str_arr_type = ctypes.c_char_p * 2
 
-        hostapd_cmd = str_arr_type(exe_path, config_path, '-B')
+        hostapd_cmd = str_arr_type(exe_path, config_path)
 
-        hostapd_lib = ctypes.cdll.LoadLibrary(
+        self.hostapd_lib = ctypes.cdll.LoadLibrary(
             hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
 
-        self.hostapd_process = multiprocessing.Process(
-            target=hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
+        self.hostapd_thread = threading.Thread(
+            target=self.hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
 
-        self.hostapd_process.start()
+        self.hostapd_thread.start()
 
     def stop(self):
         """
         Stop the hostapd process
         """
 
-        self.hostapd_process.terminate()
+        self.hostapd_lib.eloop_terminate()
 
 if __name__ == '__main__':
 
     HOSTAPD_CONFIG_DICT = {
         'ssid': 'hahaha',
-        'interface': 'wlan0',
+        'interface': 'wlan7',
         'wpa_passphrase': '12345678'}
 
     CONFIG_OBJ = HostapdConfig()
