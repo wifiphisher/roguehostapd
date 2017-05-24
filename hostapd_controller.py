@@ -17,6 +17,11 @@ class HostapdConfig(object):
     def __init__(self):
         """
         Setup the class with all the given arguments
+
+        :param self: A HostapdConfig object
+        :type self: HostapdConfig
+        :return: None
+        :rtype: None
         """
 
         self.configuration_dict = {
@@ -34,6 +39,13 @@ class HostapdConfig(object):
     def update_security_info(self, config_dict):
         """
         Update the security configuration if passphrase is specified
+
+        :param self: A HostapdConfig object
+        :param config_dict: hostapd configuration dictionary
+        :type self: HostapdConfig
+        :type config_dict: dict
+        :return: None
+        :rtype: None
         """
 
         if 'wpa_passphrase' in config_dict:
@@ -44,6 +56,13 @@ class HostapdConfig(object):
     def update_configs(self, config_dict):
         """
         Update the attributes based on the configuration dictionary
+
+        :param self: A HostapdConfig object
+        :param config_dict: hostapd configuration dictionary
+        :type self: HostapdConfig
+        :type config_dict: dict
+        :return: None
+        :rtype: None
         """
 
         for key, value in config_dict.iteritems():
@@ -57,6 +76,12 @@ class HostapdConfig(object):
     def write_configs(self):
         """
         Write the configurations to the file
+
+        :param self: A HostapdConfig object
+        :type: HostapdConfig
+        :return: None
+        :rtype: None
+        ..note: write the configuration file in the path /tmp/hostapd.conf
         """
 
         with open(hostapd_constants.HOSTAPD_CONF_PATH, 'w') as conf:
@@ -68,6 +93,13 @@ class HostapdConfig(object):
     def is_ssid_valid(cls, ssid):
         """
         Check if the specified ssid is valid
+
+        :param cls: A HostapdConfig class
+        :param ssid: The service set identifier
+        :type cls: HostapdConfig class
+        :type ssid: str
+        :return: True if the ssid is valid
+        :rtype: bool
         """
 
         return bool(len(ssid) < 33)
@@ -80,7 +112,12 @@ class Hostapd(object):
 
     def __init__(self):
         """
-        Contruct the hostapd object
+        Contruct the class
+
+        :param self: A Hostapd object
+        :type self: Hostapd
+        :return: None
+        :rtype: None
         """
 
         self.hostapd_thread = None
@@ -89,6 +126,13 @@ class Hostapd(object):
     def start(self):
         """
         Start the hostapd process
+
+        :param self: A Hostapd object
+        :type self: Hostapd
+        :return: None
+        :rtype: None
+        ..note: the start function uses ctypes to load the shared library
+        of hostapd and use it to call the main function to lunch the AP
         """
 
         work_dir = os.path.dirname(os.path.abspath(__file__))
@@ -109,7 +153,14 @@ class Hostapd(object):
 
     def stop(self):
         """
-        Stop the hostapd process
+        Stop the hostapd
+
+        :param self: A Hostapd object
+        :type self: Hostapd
+        :return: None
+        :rtype: None
+        ..note: the stop function uses the eloop_terminate function in hostapd
+        shared library to stop AP.
         """
 
         self.hostapd_lib.eloop_terminate()
