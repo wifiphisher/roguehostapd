@@ -3,9 +3,7 @@
 This module was made to wrap the hostapd
 """
 
-
-import os
-import subprocess
+import multiprocessing
 import ctypes
 import hostapd_constants
 
@@ -64,6 +62,7 @@ class HostapdConfig(object):
             for key, value in self.configuration_dict.iteritems():
                 if value:
                     conf.write(key + '=' + str(value) + '\n')
+
     @classmethod
     def is_ssid_valid(cls, ssid):
         """
@@ -83,34 +82,35 @@ class Hostapd(object):
         Contruct the hostapd object
         """
 
-        self.proc = None
+        self.hostapd_process = None
 
-    @classmethod
-    def start(cls):
+    def start(self):
         """
         Start the hostapd process
         """
 
-        hostapd_lib = ctypes.cdll.LoadLibrary(
-            hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
         exe_path = ctypes.c_char_p('./hostapd-2.6/hostapd/hostapd')
         config_path = ctypes.c_char_p(hostapd_constants.HOSTAPD_CONF_PATH)
         str_arr_type = ctypes.c_char_p * 3
-        hostapd_command = str_arr_type(exe_path, config_path, ctypes.c_char_p('-B'))
-        hostapd_lib.main(len(hostapd_command), hostapd_command)
 
-    @classmethod
-    def stop(cls):
+        hostapd_cmd = str_arr_type(
+            exe_path, config_path, ctypes.c_char_p('-B'))
+        hostapd_lib = ctypes.cdll.LoadLibrary(
+            hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
+        self.hostapd_process = multiprocessing.Process(
+            target=hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
+
+        self.hostapd_process.start()
+
+    def stop(self):
         """
         Stop the hostapd process
         """
 
-        subprocess.call('pkill hostapd', shell=True)
-        if os.path.isfile('/tmp/hostapd.conf'):
-            os.remove('/tmp/hostapd.conf')
-
+        self.hostapd_process.terminate()
 
 if __name__ == '__main__':
+
     HOSTAPD_CONFIG_DICT = {
         'ssid': 'hahaha',
         'interface': 'wlan0',
@@ -119,6 +119,5 @@ if __name__ == '__main__':
     CONFIG_OBJ = HostapdConfig()
     CONFIG_OBJ.update_configs(HOSTAPD_CONFIG_DICT)
     CONFIG_OBJ.write_configs()
-
     HOSTAPD_OBJ = Hostapd()
     HOSTAPD_OBJ.start()
