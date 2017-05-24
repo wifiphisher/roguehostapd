@@ -3,6 +3,7 @@
 This module was made to wrap the hostapd
 """
 
+import os
 import multiprocessing
 import ctypes
 import hostapd_constants
@@ -58,7 +59,7 @@ class HostapdConfig(object):
         Write the configurations to the file
         """
 
-        with open('/tmp/hostapd.conf', 'w') as conf:
+        with open(hostapd_constants.HOSTAPD_CONF_PATH, 'w') as conf:
             for key, value in self.configuration_dict.iteritems():
                 if value:
                     conf.write(key + '=' + str(value) + '\n')
@@ -89,14 +90,17 @@ class Hostapd(object):
         Start the hostapd process
         """
 
-        exe_path = ctypes.c_char_p('./hostapd-2.6/hostapd/hostapd')
-        config_path = ctypes.c_char_p(hostapd_constants.HOSTAPD_CONF_PATH)
+        work_dir = os.path.dirname(os.path.abspath(__file__))
+        exe_path = os.path.join(work_dir, hostapd_constants.HOSTAPD_EXE_PATH)
+
+        config_path = hostapd_constants.HOSTAPD_CONF_PATH
         str_arr_type = ctypes.c_char_p * 3
 
-        hostapd_cmd = str_arr_type(
-            exe_path, config_path, ctypes.c_char_p('-B'))
+        hostapd_cmd = str_arr_type(exe_path, config_path, '-B')
+
         hostapd_lib = ctypes.cdll.LoadLibrary(
             hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
+
         self.hostapd_process = multiprocessing.Process(
             target=hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
 

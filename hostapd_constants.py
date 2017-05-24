@@ -10,4 +10,5 @@ INTERFACE = 'wlan0'
 VALID_HW_MODES = ['a', 'b', 'g']
 DN = open(os.devnull, 'w')
 HOSTAPD_SHARED_LIB_PATH = './hostapd-2.6/hostapd/libhostapd.so'
+HOSTAPD_EXE_PATH = 'hostapd-2.6/hostapd/hostapd'
 HOSTAPD_CONF_PATH = '/tmp/hostapd.conf'
