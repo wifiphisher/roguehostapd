@@ -6,8 +6,7 @@ This module was made to wrap the hostapd
 
 import os
 import subprocess
-import time
-import argparse
+import ctypes
 import hostapd_constants
 
 
@@ -21,124 +20,17 @@ class HostapdConfig(object):
         Setup the class with all the given arguments
         """
 
-        self._ssid = hostapd_constants.SSID
-        self._channel = hostapd_constants.CHANNEL
-        self._beacon_int = hostapd_constants.BEACON_INT
-        self._hw_mode = hostapd_constants.HW_MODE
-        self._interface = hostapd_constants.INTERFACE
-        self._wpa_passphrase = hostapd_constants.WPA_PASSPHRASE
-        self.wpa_key_mgmt = ''
-        self.wpa_pairwise = ''
-        self.wpa = ''
-
-    @property
-    def ssid(self):
-        """
-        Get the ssid of the hostapd
-        """
-
-        return self._ssid
-
-    @ssid.setter
-    def ssid(self, value):
-        """
-        Set the ssid of the hostapd
-        """
-
-        if self.is_ssid_valid(value):
-            self._ssid = value
-        else:
-            # TODO raise SSID Invalid Error
-            pass
-
-    @property
-    def interface(self):
-        """
-        Get the interface name of the adapter which lunches hostapd
-        """
-        return self._interface
-
-    @interface.setter
-    def interface(self, value):
-        """
-        Set the interface name
-        """
-        self._interface = value
-
-    @property
-    def channel(self):
-        """
-        Get the channel number for the lunched AP
-        """
-        return self._channel
-
-    @channel.setter
-    def channel(self, value):
-        """
-        Set the channel number for the lunched AP
-        """
-
-        if value > 0:
-            self._channel = value
-        else:
-            # TODO raise invalid channel number
-            pass
-
-    @property
-    def beacon_int(self):
-        """
-        Get the beacon interval
-        """
-
-        return self._beacon_int
-
-    @beacon_int.setter
-    def beacon_int(self, val):
-        """
-        Set the beacon interval
-        """
-
-        if val > 0:
-            self._beacon_int = val
-        else:
-            # TODO raise invalid beacon interval
-            pass
-
-    @property
-    def hw_mode(self):
-        """
-        Get the hardware mode of the target AP
-        """
-
-        return self._hw_mode
-
-    @hw_mode.setter
-    def hw_mode(self, val):
-        """
-        Set the hardware mode of the target AP
-        """
-
-        if val in hostapd_constants.VALID_HW_MODES:
-            self._hw_mode = val
-        else:
-            # TODO raise invalid hw_mode
-            pass
-
-    @property
-    def wpa_passphrase(self):
-        """
-        Get the passphrase of AP
-        """
-
-        return self._wpa_passphrase
-
-    @wpa_passphrase.setter
-    def wpa_passphrase(self, value):
-        """
-        Set the passphrase of AP
-        """
-
-        self._wpa_passphrase = value
+        self.configuration_dict = {
+            'ssid': hostapd_constants.SSID,
+            'channel': hostapd_constants.CHANNEL,
+            'beacon_int': hostapd_constants.BEACON_INT,
+            'hw_mode': hostapd_constants.HW_MODE,
+            'interface': hostapd_constants.INTERFACE,
+            'wpa_passphrase': hostapd_constants.WPA_PASSPHRASE,
+            'wpa_key_mgmt': '',
+            'wpa_pairwise': '',
+            'wpa': ''
+            }
 
     def update_security_info(self, config_dict):
         """
@@ -146,9 +38,9 @@ class HostapdConfig(object):
         """
 
         if 'wpa_passphrase' in config_dict:
-            self.wpa_key_mgmt = "WPA-PSK"
-            self.wpa_pairwise = "TKIP CCMP"
-            self.wpa = '3'
+            self.configuration_dict['wpa_key_mgmt'] = "WPA-PSK"
+            self.configuration_dict['wpa_pairwise'] = "TKIP CCMP"
+            self.configuration_dict['wpa'] = '3'
 
     def update_configs(self, config_dict):
         """
@@ -156,8 +48,8 @@ class HostapdConfig(object):
         """
 
         for key, value in config_dict.iteritems():
-            if key in self.__dict__:
-                self.__dict__[key] = value
+            if key in self.configuration_dict:
+                self.configuration_dict[key] = value
             else:
                 raise KeyError('Unsupported hostapd configuation!')
 
@@ -169,11 +61,11 @@ class HostapdConfig(object):
         """
 
         with open('/tmp/hostapd.conf', 'w') as conf:
-            for key, value in self.__dict__.iteritems():
+            for key, value in self.configuration_dict.iteritems():
                 if value:
                     conf.write(key + '=' + str(value) + '\n')
-
-    def is_ssid_valid(self, ssid):
+    @classmethod
+    def is_ssid_valid(cls, ssid):
         """
         Check if the specified ssid is valid
         """
@@ -193,24 +85,22 @@ class Hostapd(object):
 
         self.proc = None
 
-    def start(self):
+    @classmethod
+    def start(cls):
         """
         Start the hostapd process
         """
 
-        self.proc = subprocess.Popen(
-            ['hostapd', '/tmp/hostapd.conf'],
-            stdout=hostapd_constants.DN,
-            stderr=hostapd_constants.DN)
-        try:
-            time.sleep(2)
-            if self.proc.poll() is not None:
-                print 'Fail to start hostapd\n'
-                raise Exception
-        except KeyboardInterrupt:
-            raise Exception
+        hostapd_lib = ctypes.cdll.LoadLibrary(
+            hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
+        exe_path = ctypes.c_char_p('./hostapd-2.6/hostapd/hostapd')
+        config_path = ctypes.c_char_p(hostapd_constants.HOSTAPD_CONF_PATH)
+        str_arr_type = ctypes.c_char_p * 3
+        hostapd_command = str_arr_type(exe_path, config_path, ctypes.c_char_p('-B'))
+        hostapd_lib.main(len(hostapd_command), hostapd_command)
 
-    def stop(self):
+    @classmethod
+    def stop(cls):
         """
         Stop the hostapd process
         """
@@ -221,14 +111,14 @@ class Hostapd(object):
 
 
 if __name__ == '__main__':
-    hostapd_configuration = {
+    HOSTAPD_CONFIG_DICT = {
         'ssid': 'hahaha',
-        'interface': 'wlan7',
+        'interface': 'wlan0',
         'wpa_passphrase': '12345678'}
 
-    config_object = HostapdConfig()
-    config_object.update_configs(hostapd_configuration)
-    config_object.write_configs()
+    CONFIG_OBJ = HostapdConfig()
+    CONFIG_OBJ.update_configs(HOSTAPD_CONFIG_DICT)
+    CONFIG_OBJ.write_configs()
 
-    hostapd = Hostapd()
-    hostapd.start()
+    HOSTAPD_OBJ = Hostapd()
+    HOSTAPD_OBJ.start()
