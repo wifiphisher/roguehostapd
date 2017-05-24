@@ -78,7 +78,7 @@ class HostapdConfig(object):
         Write the configurations to the file
 
         :param self: A HostapdConfig object
-        :type: HostapdConfig
+        :type self: HostapdConfig
         :return: None
         :rtype: None
         ..note: write the configuration file in the path /tmp/hostapd.conf
