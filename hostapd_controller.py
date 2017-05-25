@@ -6,6 +6,7 @@ This module was made to wrap the hostapd
 import os
 import threading
 import ctypes
+import time
 import hostapd_constants
 
 
@@ -146,11 +147,15 @@ class Hostapd(object):
         hostapd_cmd = str_arr_type(exe_path, config_path)
 
         self.hostapd_lib = ctypes.cdll.LoadLibrary(shared_lib_path)
+        self.hostapd_lib.stdout_off()
 
         self.hostapd_thread = threading.Thread(
             target=self.hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
 
         self.hostapd_thread.start()
+        # wait for hostapd lunched
+        time.sleep(2)
+        self.hostapd_lib.stdout_on()
 
     def stop(self):
         """
@@ -164,7 +169,11 @@ class Hostapd(object):
         shared library to stop AP.
         """
 
+        self.hostapd_lib.stdout_off()
         self.hostapd_lib.eloop_terminate()
+        # wait for ap stop
+        time.sleep(2)
+        self.hostapd_lib.stdout_on()
 
 if __name__ == '__main__':
 
