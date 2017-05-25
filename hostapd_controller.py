@@ -137,14 +137,15 @@ class Hostapd(object):
 
         work_dir = os.path.dirname(os.path.abspath(__file__))
         exe_path = os.path.join(work_dir, hostapd_constants.HOSTAPD_EXE_PATH)
+        shared_lib_path = os.path.join(
+            work_dir, hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
 
         config_path = hostapd_constants.HOSTAPD_CONF_PATH
         str_arr_type = ctypes.c_char_p * 2
 
         hostapd_cmd = str_arr_type(exe_path, config_path)
 
-        self.hostapd_lib = ctypes.cdll.LoadLibrary(
-            hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
+        self.hostapd_lib = ctypes.cdll.LoadLibrary(shared_lib_path)
 
         self.hostapd_thread = threading.Thread(
             target=self.hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))

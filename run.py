@@ -38,8 +38,9 @@ def check_args(args):
     Check the given arguments for logic errors
     """
 
-    if args.wpa_passphrase and len(args.wpa_passphrase) < 8\
-            or len(args.wpa_passphrase) > 64:
+    if args.wpa_passphrase and (
+            len(args.wpa_passphrase) < 8 or len(args.wpa_passphrase) > 64):
+
         sys.exit('preshared key not valid')
 
 
