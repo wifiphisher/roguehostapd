@@ -32,6 +32,10 @@ export BINDIR ?= /usr/local/bin/
 hostapd_lib: CFLAGS += -fPIC
 hostapd_lib: LDFLAGS += -shared
 
+ifdef CONFIG_KARMA_ATTACK
+CFLAGS += -DCONFIG_KARMA_ATTACK
+endif
+
 ifndef CONFIG_NO_GITVER
 # Add VERSION_STR postfix for builds from a git repository
 ifeq ($(wildcard ../.git),../.git)

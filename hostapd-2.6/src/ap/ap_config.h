@@ -83,6 +83,13 @@ typedef enum hostap_security_policy {
 	SECURITY_OSEN = 5
 } secpolicy;
 
+#ifdef CONFIG_KARMA_ATTACK
+struct hostapd_karma_data {
+    u8 ssid[SSID_MAX_LEN];
+    size_t ssid_len;
+};
+#endif
+
 struct hostapd_ssid {
 	u8 ssid[SSID_MAX_LEN];
 	size_t ssid_len;
@@ -235,7 +242,9 @@ struct hostapd_bss_config {
 	char wds_bridge[IFNAMSIZ + 1];
 
 	enum hostapd_logger_level logger_syslog_level, logger_stdout_level;
-
+#ifdef CONFIG_KARMA_ATTACK
+    u8 karma_enable;
+#endif
 	unsigned int logger_syslog; /* module bitfield */
 	unsigned int logger_stdout; /* module bitfield */
 
@@ -604,7 +613,9 @@ struct hostapd_bss_config {
 struct hostapd_config {
 	struct hostapd_bss_config **bss, *last_bss;
 	size_t num_bss;
-
+#ifdef CONFIG_KARMA_ATTACK
+    u8 karma_enable;
+#endif
 	u16 beacon_int;
 	int rts_threshold;
 	int fragm_threshold;

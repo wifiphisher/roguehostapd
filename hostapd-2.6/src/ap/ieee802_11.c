@@ -1418,8 +1418,12 @@ static u16 check_ssid(struct hostapd_data *hapd, struct sta_info *sta,
 	if (ssid_ie == NULL)
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 
-	if (ssid_ie_len != hapd->conf->ssid.ssid_len ||
-	    os_memcmp(ssid_ie, hapd->conf->ssid.ssid, ssid_ie_len) != 0) {
+	if ((ssid_ie_len != hapd->conf->ssid.ssid_len ||
+	    os_memcmp(ssid_ie, hapd->conf->ssid.ssid, ssid_ie_len) != 0)
+#ifdef CONFIG_KARMA_ATTACK
+        && !hapd->conf->karma_enable
+#endif
+        ) {
 		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_INFO,
 			       "Station tried to associate with unknown SSID "
@@ -2060,7 +2064,6 @@ static void handle_assoc(struct hostapd_data *hapd,
 	const u8 *pos;
 	int left, i;
 	struct sta_info *sta;
-
 	if (len < IEEE80211_HDRLEN + (reassoc ? sizeof(mgmt->u.reassoc_req) :
 				      sizeof(mgmt->u.assoc_req))) {
 		wpa_printf(MSG_INFO, "handle_assoc(reassoc=%d) - too short payload (len=%lu)",

@@ -1993,7 +1993,13 @@ static int hostapd_config_fill(struct hostapd_config *conf,
 	if (os_strcmp(buf, "interface") == 0) {
 		os_strlcpy(conf->bss[0]->iface, pos,
 			   sizeof(conf->bss[0]->iface));
-	} else if (os_strcmp(buf, "bridge") == 0) {
+	}
+#ifdef CONFIG_KARMA_ATTACK
+    else if (os_strcmp(buf, "karma_enable") == 0) {
+        bss->karma_enable = atoi(pos);
+    }
+#endif
+    else if (os_strcmp(buf, "bridge") == 0) {
 		os_strlcpy(bss->bridge, pos, sizeof(bss->bridge));
 	} else if (os_strcmp(buf, "vlan_bridge") == 0) {
 		os_strlcpy(bss->vlan_bridge, pos, sizeof(bss->vlan_bridge));

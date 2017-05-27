@@ -9,6 +9,9 @@
 # be modified from here. In most cass, these lines should use += in order not
 # to override previous values of the variables.
 
+# KARMA attack
+CONFIG_KARMA_ATTACK=y
+
 # Driver interface for Host AP driver
 CONFIG_DRIVER_HOSTAP=y
 

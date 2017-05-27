@@ -118,11 +118,13 @@ struct hostapd_data {
 	struct hostapd_iface *iface;
 	struct hostapd_config *iconf;
 	struct hostapd_bss_config *conf;
+#ifdef CONFIG_KARMA_ATTACK
+    struct hostapd_karma_data karma_data;
+#endif
 	int interface_added; /* virtual interface added for this BSS */
 	unsigned int started:1;
 	unsigned int disabled:1;
 	unsigned int reenable_beacon:1;
-
 	u8 own_addr[ETH_ALEN];
 
 	int num_sta; /* number of entries in sta_list */
