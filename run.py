@@ -15,6 +15,7 @@ def parse_args():
 
     parser = argparse.ArgumentParser()
 
+    # add options for hostapd.conf
     parser.add_argument(
         "-ssid", "--ssid", help="Specify the service set identifier of the AP")
 
@@ -34,7 +35,41 @@ def parse_args():
         "-kA", "--karma_enable", action='store_const', const=1,
         help="Enabling karma attack")
 
+    # add hostapd command line options
+    parser.add_argument(
+        "-d", "--debug_level", action='store_true',
+        help="Enabling the verbose debug log")
+
+    parser.add_argument(
+        "-K", "--key_data", action='store_true',
+        help="include key data in debug messages")
+
+    parser.add_argument(
+        "-t", "--timestamp", action='store_true',
+        help="include timestamps in some debug messages")
+
+    parser.add_argument(
+        "-v", "--version", action='store_true',
+        help="show hostapd version")
+
     return parser.parse_args()
+
+
+def get_configuration_dicts(arg_dict):
+    """
+    Get the dictionary for hostapd.conf and cmd line options
+    """
+
+    config_obj = hostapd_controller.HostapdConfig()
+    hostapd_dict = {}
+    options = {}
+    for key, val in arg_dict.iteritems():
+        if key in config_obj.configuration_dict:
+            hostapd_dict[key] = val
+        elif key in config_obj.options:
+            options[key] = val
+
+    return hostapd_dict, options
 
 
 def check_args(args):
@@ -55,10 +90,8 @@ def run():
 
     args = parse_args()
     check_args(args)
-
-    config_obj = hostapd_controller.HostapdConfig()
-    config_obj.write_configs(vars(args))
+    hostapd_dict, options = get_configuration_dicts(vars(args))
     hostapd_obj = hostapd_controller.Hostapd()
-    hostapd_obj.start()
+    hostapd_obj.start(hostapd_dict, options)
 
 run()

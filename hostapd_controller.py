@@ -24,7 +24,7 @@ class HostapdConfig(object):
         :return: None
         :rtype: None
         """
-
+        # configurations for hostapd.conf
         self.configuration_dict = {
             # required configurations
             'ssid': hostapd_constants.SSID,
@@ -33,12 +33,20 @@ class HostapdConfig(object):
             'hw_mode': hostapd_constants.HW_MODE,
             'interface': hostapd_constants.INTERFACE,
             # karma attack
-            'karma_enable' : hostapd_constants.KARMA_ENABLE,
+            'karma_enable': hostapd_constants.KARMA_ENABLE,
             # security related configuratoins
             'wpa_passphrase': '',
             'wpa_key_mgmt': '',
             'wpa_pairwise': '',
             'wpa': ''
+            }
+
+        # configuration for hostapd command line options
+        self.options = {
+            'debug_level':  None,
+            'key_data': None,
+            'timestamp': None,
+            'version': None,
             }
 
     def update_security_info(self, config_dict):
@@ -78,17 +86,46 @@ class HostapdConfig(object):
 
         self.update_security_info(config_dict)
 
-    def write_configs(self, config_dict):
+    def update_options(self, options):
+        """
+        Update the comand line options
+
+        :param self: A HostapdConfig object
+        :type self: HostapdConfig
+        :param options: configurations for command line options
+        :type options: dict
+        :return: None
+        :rtype: None
+        ..note: update the command line options
+        """
+
+        for key in options:
+            if key in self.options and options[key]:
+                if key == 'debug_level':
+                    self.options[key] = tuple(['-ddd'])
+                elif key == 'key_data':
+                    self.options[key] = tuple(['-K'])
+                elif key == 'timestamp':
+                    self.options[key] = tuple(['-t'])
+                elif key == 'version':
+                    self.options[key] = tuple(['-v'])
+
+    def write_configs(self, config_dict, options):
         """
         Write the configurations to the file
 
         :param self: A HostapdConfig object
         :type self: HostapdConfig
+        :param config_dict: configurations for hostapd.conf
+        :type config_dict: dict
+        :param options: hostapd command line options
+        :type options: dict
         :return: None
         :rtype: None
         ..note: write the configuration file in the path /tmp/hostapd.conf
         """
 
+        self.update_options(options)
         self.update_configs(config_dict)
         with open(hostapd_constants.HOSTAPD_CONF_PATH, 'w') as conf:
             for key, value in self.configuration_dict.iteritems():
@@ -126,20 +163,28 @@ class Hostapd(object):
         :rtype: None
         """
 
+        self.config_obj = None
         self.hostapd_thread = None
         self.hostapd_lib = None
 
-    def start(self):
+    def start(self, hostapd_config, options):
         """
         Start the hostapd process
 
         :param self: A Hostapd object
         :type self: Hostapd
+        :param hostapd_config: Hostapd configuration for hostapd.conf
+        :type hostapd_config: dict
+        :param options: Hostapd command line options
+        :type options: dict
         :return: None
         :rtype: None
         ..note: the start function uses ctypes to load the shared library
         of hostapd and use it to call the main function to lunch the AP
         """
+
+        self.config_obj = HostapdConfig()
+        self.config_obj.write_configs(hostapd_config, options)
 
         work_dir = os.path.dirname(os.path.abspath(__file__))
         exe_path = os.path.join(work_dir, hostapd_constants.HOSTAPD_EXE_PATH)
@@ -147,20 +192,32 @@ class Hostapd(object):
             work_dir, hostapd_constants.HOSTAPD_SHARED_LIB_PATH)
 
         config_path = hostapd_constants.HOSTAPD_CONF_PATH
-        str_arr_type = ctypes.c_char_p * 2
 
-        hostapd_cmd = str_arr_type(exe_path, config_path)
+        # get the hostapd command to lunch the hostapd
+        hostapd_cmd = [exe_path, config_path]
+        for key in self.config_obj.options:
+            if self.config_obj.options[key]:
+                hostapd_cmd += self.config_obj.options[key]
+        num_of_args = len(hostapd_cmd)
+        str_arr_type = ctypes.c_char_p * num_of_args
+        hostapd_cmd = str_arr_type(*hostapd_cmd)
 
+        # get the hostapd shared library
         self.hostapd_lib = ctypes.cdll.LoadLibrary(shared_lib_path)
-        self.hostapd_lib.stdout_off()
 
+        # turn off the debug log if debug level not specified
+        if not self.config_obj.options['debug_level']:
+            self.hostapd_lib.stdout_off()
+
+        # start the hostapd thread
         self.hostapd_thread = threading.Thread(
             target=self.hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
-
         self.hostapd_thread.start()
-        # wait for hostapd lunched
-        time.sleep(2)
-        self.hostapd_lib.stdout_on()
+
+        if not self.config_obj.options['debug_level']:
+            # wait for hostapd lunched
+            time.sleep(2)
+            self.hostapd_lib.stdout_on()
 
     def stop(self):
         """
@@ -173,12 +230,16 @@ class Hostapd(object):
         ..note: the stop function uses the eloop_terminate function in hostapd
         shared library to stop AP.
         """
+        # turn off the hostapd debug log if the debug_level is not turnned on
+        if not self.config_obj.options['debug_level']:
+            self.hostapd_lib.stdout_off()
 
-        self.hostapd_lib.stdout_off()
         self.hostapd_lib.eloop_terminate()
-        # wait for ap stop
-        time.sleep(2)
-        self.hostapd_lib.stdout_on()
+
+        if not self.config_obj.options['debug_level']:
+            # wait for ap stop
+            time.sleep(2)
+            self.hostapd_lib.stdout_on()
 
 if __name__ == '__main__':
 
@@ -188,7 +249,11 @@ if __name__ == '__main__':
         'karma_enable': 1,
         'wpa_passphrase': '12345678'}
 
-    CONFIG_OBJ = HostapdConfig()
-    CONFIG_OBJ.write_configs(HOSTAPD_CONFIG_DICT)
+    HOSTAPD_OPTION_DICT = {
+        'debug_level': True,
+        'key_data': True,
+        'timestamp': False,
+        'version': False}
+
     HOSTAPD_OBJ = Hostapd()
-    HOSTAPD_OBJ.start()
+    HOSTAPD_OBJ.start(HOSTAPD_CONFIG_DICT, HOSTAPD_OPTION_DICT)
