@@ -37,8 +37,10 @@ def parse_args():
 
     # add hostapd command line options
     parser.add_argument(
-        "-d", "--debug_level", action='store_true',
-        help="Enabling the verbose debug log")
+        "-d", "--debug_level", type=int,
+        help="Enabling the verbose debug log: --0 disable all the log"
+        "--1 enable the debug log, --2 enable verbose debug log",
+        choices=[0, 1, 2])
 
     parser.add_argument(
         "-K", "--key_data", action='store_true',
@@ -93,5 +95,7 @@ def run():
     hostapd_dict, options = get_configuration_dicts(vars(args))
     hostapd_obj = hostapd_controller.Hostapd()
     hostapd_obj.start(hostapd_dict, options)
+    hostapd_obj.hostapd_thread.join()
+    hostapd_obj.stop()
 
 run()

@@ -6,7 +6,6 @@ This module was made to wrap the hostapd
 import os
 import threading
 import ctypes
-import time
 import hostapd_constants
 
 
@@ -49,6 +48,9 @@ class HostapdConfig(object):
             'version': None,
             }
 
+        # hostapd debug level
+        self.debug_level = hostapd_constants.HOSTAPD_DEBUG_OFF
+
     def update_security_info(self, config_dict):
         """
         Update the security configuration if passphrase is specified
@@ -86,6 +88,21 @@ class HostapdConfig(object):
 
         self.update_security_info(config_dict)
 
+    def _update_debug_level(self, options):
+        """
+        Update the debug level from options dictionary
+
+        :param self: A HostapdConfig object
+        :type self: HostapdConfig
+        :param options: configurations for command line options
+        :type options: dict
+        :return: None
+        :rtype: None
+        """
+        self.debug_level = options['debug_level']
+        if self.debug_level == hostapd_constants.HOSTAPD_DEBUG_VERBOSE:
+            self.options['debug_level'] = tuple(['-ddd'])
+
     def update_options(self, options):
         """
         Update the comand line options
@@ -102,7 +119,7 @@ class HostapdConfig(object):
         for key in options:
             if key in self.options and options[key]:
                 if key == 'debug_level':
-                    self.options[key] = tuple(['-ddd'])
+                    self._update_debug_level(options)
                 elif key == 'key_data':
                     self.options[key] = tuple(['-K'])
                 elif key == 'timestamp':
@@ -206,18 +223,13 @@ class Hostapd(object):
         self.hostapd_lib = ctypes.cdll.LoadLibrary(shared_lib_path)
 
         # turn off the debug log if debug level not specified
-        if not self.config_obj.options['debug_level']:
+        if not self.config_obj.debug_level:
             self.hostapd_lib.stdout_off()
 
         # start the hostapd thread
         self.hostapd_thread = threading.Thread(
             target=self.hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
         self.hostapd_thread.start()
-
-        if not self.config_obj.options['debug_level']:
-            # wait for hostapd lunched
-            time.sleep(2)
-            self.hostapd_lib.stdout_on()
 
     def stop(self):
         """
@@ -231,15 +243,13 @@ class Hostapd(object):
         shared library to stop AP.
         """
         # turn off the hostapd debug log if the debug_level is not turnned on
-        if not self.config_obj.options['debug_level']:
+        if not self.config_obj.debug_level:
             self.hostapd_lib.stdout_off()
 
         self.hostapd_lib.eloop_terminate()
 
-        if not self.config_obj.options['debug_level']:
-            # wait for ap stop
-            time.sleep(2)
-            self.hostapd_lib.stdout_on()
+        if os.path.isfile(hostapd_constants.HOSTAPD_CONF_PATH):
+            os.remove(hostapd_constants.HOSTAPD_CONF_PATH)
 
 if __name__ == '__main__':
 
@@ -250,7 +260,7 @@ if __name__ == '__main__':
         'wpa_passphrase': '12345678'}
 
     HOSTAPD_OPTION_DICT = {
-        'debug_level': True,
+        'debug_level': hostapd_constants.HOSTAPD_DEBUG_VERBOSE,
         'key_data': True,
         'timestamp': False,
         'version': False}
