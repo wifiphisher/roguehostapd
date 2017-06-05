@@ -26,12 +26,16 @@ class HostapdConfig(object):
         """
 
         self.configuration_dict = {
+            # required configurations
             'ssid': hostapd_constants.SSID,
             'channel': hostapd_constants.CHANNEL,
             'beacon_int': hostapd_constants.BEACON_INT,
             'hw_mode': hostapd_constants.HW_MODE,
             'interface': hostapd_constants.INTERFACE,
-            'wpa_passphrase': hostapd_constants.WPA_PASSPHRASE,
+            # karma attack
+            'karma_enable' : hostapd_constants.KARMA_ENABLE,
+            # security related configuratoins
+            'wpa_passphrase': '',
             'wpa_key_mgmt': '',
             'wpa_pairwise': '',
             'wpa': ''
@@ -49,7 +53,7 @@ class HostapdConfig(object):
         :rtype: None
         """
 
-        if 'wpa_passphrase' in config_dict:
+        if 'wpa_passphrase' in config_dict and config_dict['wpa_passphrase']:
             self.configuration_dict['wpa_key_mgmt'] = "WPA-PSK"
             self.configuration_dict['wpa_pairwise'] = "TKIP CCMP"
             self.configuration_dict['wpa'] = '3'
@@ -67,14 +71,14 @@ class HostapdConfig(object):
         """
 
         for key, value in config_dict.iteritems():
-            if key in self.configuration_dict:
+            if (key in self.configuration_dict) and value:
                 self.configuration_dict[key] = value
-            else:
+            elif key not in self.configuration_dict:
                 raise KeyError('Unsupported hostapd configuation!')
 
         self.update_security_info(config_dict)
 
-    def write_configs(self):
+    def write_configs(self, config_dict):
         """
         Write the configurations to the file
 
@@ -85,6 +89,7 @@ class HostapdConfig(object):
         ..note: write the configuration file in the path /tmp/hostapd.conf
         """
 
+        self.update_configs(config_dict)
         with open(hostapd_constants.HOSTAPD_CONF_PATH, 'w') as conf:
             for key, value in self.configuration_dict.iteritems():
                 if value:
@@ -179,11 +184,11 @@ if __name__ == '__main__':
 
     HOSTAPD_CONFIG_DICT = {
         'ssid': 'hahaha',
-        'interface': 'wlan7',
+        'interface': 'wlan0',
+        'karma_enable': 1,
         'wpa_passphrase': '12345678'}
 
     CONFIG_OBJ = HostapdConfig()
-    CONFIG_OBJ.update_configs(HOSTAPD_CONFIG_DICT)
-    CONFIG_OBJ.write_configs()
+    CONFIG_OBJ.write_configs(HOSTAPD_CONFIG_DICT)
     HOSTAPD_OBJ = Hostapd()
     HOSTAPD_OBJ.start()

@@ -7,6 +7,7 @@ import os
 
 CHANNEL = 6
 SSID = 'test'
+KARMA_ENABLE = 0
 BEACON_INT = 100
 HW_MODE = 'g'
 WPA_PASSPHRASE = ''

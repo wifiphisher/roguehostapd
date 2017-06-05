@@ -30,6 +30,10 @@ def parse_args():
     parser.add_argument(
         "-pK", "--wpa_passphrase", help="WPA/RSN passhrase")
 
+    parser.add_argument(
+        "-kA", "--karma_enable", action='store_const', const=1,
+        help="Enabling karma attack")
+
     return parser.parse_args()
 
 
@@ -53,12 +57,7 @@ def run():
     check_args(args)
 
     config_obj = hostapd_controller.HostapdConfig()
-    for arg in vars(args):
-        arg_val = getattr(args, arg)
-        if arg in config_obj.configuration_dict and arg_val:
-            config_obj.configuration_dict[arg] = arg_val
-
-    config_obj.write_configs()
+    config_obj.write_configs(vars(args))
     hostapd_obj = hostapd_controller.Hostapd()
     hostapd_obj.start()
 
