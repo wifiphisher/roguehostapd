@@ -566,11 +566,6 @@ static enum ssid_match_result ssid_match(struct hostapd_data *hapd,
 {
 	const u8 *pos, *end;
 	int wildcard = 0;
-#ifdef CONFIG_KARMA_ATTACK
-    if (hapd->conf->karma_enable) {
-        return EXACT_SSID_MATCH;
-    }
-#endif
 	if (ssid_len == 0)
 		wildcard = 1;
 	if (ssid_len == hapd->conf->ssid.ssid_len &&
@@ -770,7 +765,6 @@ void handle_probe_req(struct hostapd_data *hapd,
 #ifdef CONFIG_KARMA_ATTACK
     if (!hapd->conf->karma_enable)
 #endif
-    {
 	    if (elems.ds_params &&
 	        hapd->iface->current_mode &&
 	        (hapd->iface->current_mode->mode == HOSTAPD_MODE_IEEE80211G ||
@@ -778,7 +772,6 @@ void handle_probe_req(struct hostapd_data *hapd,
 	        hapd->iconf->channel != elems.ds_params[0]) {
 	    	return;
 	    }
-    }
 
 #ifdef CONFIG_P2P
 	if (hapd->p2p && hapd->p2p_group && elems.wps_ie) {
@@ -853,7 +846,13 @@ void handle_probe_req(struct hostapd_data *hapd,
                     MAC2STR(mgmt->da),
                     elems.ssid_list ? " (SSID list)" : "");
         }
+#ifdef CONFIG_KARMA_ATTACK
+        // return only if karma attack not enable
+        if (res == NO_SSID_MATCH && !hapd->conf->karma_enable)
+            return;
+#else
         return;
+#endif
     }
     
 #ifdef CONFIG_KARMA_ATTACK
@@ -944,9 +943,8 @@ void handle_probe_req(struct hostapd_data *hapd,
 
 	resp = hostapd_gen_probe_resp(hapd, mgmt, elems.p2p != NULL,
 				      &resp_len);
-	if (resp == NULL) {
+	if (resp == NULL)
 		return;
-    }
 
 	/*
 	 * If this is a broadcast probe request, apply no ack policy to avoid

@@ -1418,12 +1418,15 @@ static u16 check_ssid(struct hostapd_data *hapd, struct sta_info *sta,
 	if (ssid_ie == NULL)
 		return WLAN_STATUS_UNSPECIFIED_FAILURE;
 
-	if ((ssid_ie_len != hapd->conf->ssid.ssid_len ||
-	    os_memcmp(ssid_ie, hapd->conf->ssid.ssid, ssid_ie_len) != 0)
+    // bypass the ssid sanity check for KARMA attack
 #ifdef CONFIG_KARMA_ATTACK
-        && !hapd->conf->karma_enable
+    if (hapd->conf->karma_enable) {
+        return WLAN_STATUS_SUCCESS;  
+    }
 #endif
-        ) {
+
+	if (ssid_ie_len != hapd->conf->ssid.ssid_len ||
+	    os_memcmp(ssid_ie, hapd->conf->ssid.ssid, ssid_ie_len) != 0) {
 		hostapd_logger(hapd, sta->addr, HOSTAPD_MODULE_IEEE80211,
 			       HOSTAPD_LEVEL_INFO,
 			       "Station tried to associate with unknown SSID "
