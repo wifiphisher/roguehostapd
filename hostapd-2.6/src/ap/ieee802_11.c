@@ -46,7 +46,6 @@
 #include "rrm.h"
 #include "taxonomy.h"
 
-
 u8 * hostapd_eid_supp_rates(struct hostapd_data *hapd, u8 *eid)
 {
 	u8 *pos = eid;

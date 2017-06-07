@@ -45,7 +45,9 @@
 #include "ndisc_snoop.h"
 #include "neighbor_db.h"
 #include "rrm.h"
-
+#ifdef CONFIG_KARMA_ATTACK
+#include "karma_handlers.h"
+#endif
 
 static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason);
 static int hostapd_setup_encryption(char *iface, struct hostapd_data *hapd);
@@ -53,6 +55,9 @@ static int hostapd_broadcast_wep_clear(struct hostapd_data *hapd);
 static int setup_interface2(struct hostapd_iface *iface);
 static void channel_list_update_timeout(void *eloop_ctx, void *timeout_ctx);
 
+#ifdef CONFIG_KARMA_ATTACK
+struct hostapd_data *g_hapd_data;
+#endif
 
 int hostapd_for_each_interface(struct hapd_interfaces *interfaces,
 			       int (*cb)(struct hostapd_iface *iface,
@@ -495,6 +500,9 @@ static int hostapd_flush_old_stations(struct hostapd_data *hapd, u16 reason)
 
 static void hostapd_bss_deinit_no_free(struct hostapd_data *hapd)
 {
+#ifdef CONFIG_KARMA_ATTACK
+    free_all_karma_data(hapd);
+#endif
 	hostapd_free_stas(hapd);
 	hostapd_flush_old_stations(hapd, WLAN_REASON_DEAUTH_LEAVING);
 	hostapd_clear_wep(hapd);
@@ -2125,7 +2133,9 @@ struct hostapd_iface * hostapd_init(struct hapd_interfaces *interfaces,
 			goto fail;
 		hapd->msg_ctx = hapd;
 	}
-
+#ifdef CONFIG_KARMA_ATTACK
+    g_hapd_data = hapd_iface->bss[0];
+#endif
 	return hapd_iface;
 
 fail:

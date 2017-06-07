@@ -119,7 +119,8 @@ struct hostapd_data {
 	struct hostapd_config *iconf;
 	struct hostapd_bss_config *conf;
 #ifdef CONFIG_KARMA_ATTACK
-    struct hostapd_karma_data karma_data;
+    // use to search the per station karma data
+    struct hostapd_karma_data* karma_data_list;
 #endif
 	int interface_added; /* virtual interface added for this BSS */
 	unsigned int started:1;

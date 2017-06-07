@@ -93,6 +93,10 @@ OBJS += ../src/ap/beacon.o
 OBJS += ../src/ap/bss_load.o
 OBJS += ../src/ap/neighbor_db.o
 OBJS += ../src/ap/rrm.o
+ifdef CONFIG_KARMA_ATTACK
+OBJS += ../src/ap/karma_handlers.o
+OBJS_c += ../src/ap/karma_handlers.o
+endif
 
 OBJS_c = hostapd_cli.o
 OBJS_c += ../src/common/wpa_ctrl.o

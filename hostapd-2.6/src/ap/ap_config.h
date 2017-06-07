@@ -85,8 +85,11 @@ typedef enum hostap_security_policy {
 
 #ifdef CONFIG_KARMA_ATTACK
 struct hostapd_karma_data {
-    u8 ssid[SSID_MAX_LEN];
+    u8 is_assoc;
     size_t ssid_len;
+    u8 ssid[SSID_MAX_LEN];
+    u8 mac_addr[6];
+    struct hostapd_karma_data *next;
 };
 #endif
 
