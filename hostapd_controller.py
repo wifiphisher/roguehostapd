@@ -9,6 +9,21 @@ import ctypes
 import hostapd_constants
 
 
+class KarmaData(ctypes.Structure):
+    """
+    Handle the hostapd return mac/ssid data
+    """
+    pass
+
+
+KarmaData._fields_ = [
+    ("is_assoc", ctypes.c_ubyte),
+    ("ssid_len", ctypes.c_size_t),
+    ("ssid", ctypes.c_ubyte * 32),
+    ("mac_addr", ctypes.c_ubyte * 6),
+    ("next_data", ctypes.POINTER(KarmaData))]
+
+
 class HostapdConfig(object):
     """
     Handle the Hostapd configuration
@@ -184,6 +199,55 @@ class Hostapd(object):
         self.hostapd_thread = None
         self.hostapd_lib = None
 
+    @staticmethod
+    def _parse_karma_data(karma_data):
+        """
+        get the associated clients' mac address and essid
+
+        :param self: A Hostapd object
+        :type self: Hostapd
+        :param karma_data: A KarmaData object
+        :type karma_data: KarmaData
+
+        :return: A list of tuple of essid and mac address tuple
+        :rtype: list
+        """
+
+        ret = []
+        if karma_data:
+            current = karma_data
+            while current:
+                if current.contents.is_assoc:
+                    # convert ssid_len to integer
+                    ssid_len = int(current.contents.ssid_len)
+                    # convert mac address to string
+                    mac_addr = current.contents.mac_addr
+                    mac_l = [format(mac_addr[i], 'x') for i in range(6)]
+                    mac_str = ':'.join(mac_l)
+
+                    # convert ssid to string
+                    ssid_buf = current.contents.ssid
+                    ssid_list = [ssid_buf[i] for i in range(ssid_len)]
+                    ssid = ''.join(map(chr, ssid_list))
+                    ret.append((mac_str, ssid))
+                current = current.contents.next_data
+        return ret
+
+    def get_karma_data(self):
+        """
+        get the data for the KARMA attack victims from hostapd
+
+        :param self: A Hostapd object
+        :type self: Hostapd
+
+        :return: A list of tuple of essid and mac address tuple
+        :rtype: list
+        """
+
+        karma_data = self.hostapd_lib.get_assoc_karma_data()
+        mac_ssid_pairs = self._parse_karma_data(karma_data)
+        return mac_ssid_pairs
+
     def start(self, hostapd_config, options):
         """
         Start the hostapd process
@@ -221,6 +285,10 @@ class Hostapd(object):
 
         # get the hostapd shared library
         self.hostapd_lib = ctypes.cdll.LoadLibrary(shared_lib_path)
+
+        # init hostapd lib info
+        self.hostapd_lib.get_assoc_karma_data.restype = ctypes.POINTER(
+            KarmaData)
 
         # turn off the debug log if debug level not specified
         if not self.config_obj.debug_level:
