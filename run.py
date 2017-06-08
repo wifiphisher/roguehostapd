@@ -44,15 +44,15 @@ def parse_args():
 
     parser.add_argument(
         "-K", "--key_data", action='store_true',
-        help="include key data in debug messages")
+        help="Include key data in debug messages")
 
     parser.add_argument(
         "-t", "--timestamp", action='store_true',
-        help="include timestamps in some debug messages")
+        help="Include timestamps in some debug messages")
 
     parser.add_argument(
         "-v", "--version", action='store_true',
-        help="show hostapd version")
+        help="Show hostapd version")
 
     return parser.parse_args()
 
