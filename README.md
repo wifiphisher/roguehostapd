@@ -1,11 +1,5 @@
-# hostapd_binder
-Hostapd Python wrapper to simplify the usage of Hostapd
-
-## Requirements
-Following are the requirements for getting the most out of hostapd_binder
-
-* Kali Linux or Ubuntu
-* One wireless adapter card that support AP mode. Drivers should support netlink.
+# roguehostapd
+Roguehostapd is a fork of hostapd, the famous user space software access point. It provides Python ctypes bindings and a number of additional attack features. It was primarily developed for use in the Wifiphisher project.
 
 ## Build
 
@@ -55,8 +49,7 @@ HOSTAPD_OBJ = Hostapd()
 HOSTAPD_OBJ.start(HOSTAPD_CONFIG_DICT, HOSTAPD_OPTION_DICT)
 ```
 
-Use the hostapd_binder as library and this config setting will spawn the rogue AP enabling KARMA attack.
-
+The above configuration will perform the KARMA attack.
 
 Following are all the options along with their descriptions (also available with `python run.py -h`)
 
