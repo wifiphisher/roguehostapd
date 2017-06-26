@@ -32,7 +32,7 @@ class HostapdBuild(build):
         self.execute(compile_hostapd, [], 'Compiling hostapd shared library')
 
 setup(
-    name='hostapd_binder',
+    name='roguehostapd',
     version='1.0',
     description='Hostapd wrapper for hostapd',
     author='Anakin',
