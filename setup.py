@@ -8,7 +8,7 @@ from subprocess import call
 from setuptools import setup
 
 BASEPATH = os.path.dirname(os.path.abspath(__file__))
-HOSTAPD_BUILD_PATH = os.path.join(BASEPATH, 'hostapd-2.6/hostapd')
+HOSTAPD_BUILD_PATH = os.path.join(BASEPATH, 'roguehostapd/hostapd-2.6/hostapd')
 
 
 class HostapdBuild(build):
