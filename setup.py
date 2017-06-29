@@ -34,7 +34,7 @@ class HostapdBuild(build):
 setup(
     name='roguehostapd',
     packages=['roguehostapd'],
-    version='1.0',
+    version='1.0.2',
     description='Hostapd wrapper for hostapd',
     url='https://github.com/wifiphisher/roguehostapd',
     author='Anakin',
