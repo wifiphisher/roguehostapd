@@ -14,7 +14,9 @@
 extern int wpa_debug_level;
 extern int wpa_debug_show_keys;
 extern int wpa_debug_timestamp;
+#ifdef CONFIG_WIFIPHISHER_COMMON
 extern int wpa_debug_silience;
+#endif
 
 /* Debugging function - conditional printf and hex dump. Driver wrappers can
  * use these for debugging purposes. */

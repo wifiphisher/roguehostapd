@@ -62,6 +62,9 @@ class HostapdConfig(object):
             'timestamp': None,
             'version': None,
             'mute': None,
+            # Disable the eloop terminate in hostapd and control by
+            # wifiphisher
+            'eloop_term_disable': None,
             }
 
         # hostapd debug level
@@ -144,6 +147,8 @@ class HostapdConfig(object):
                     self.options[key] = tuple(['-v'])
                 elif key == 'mute':
                     self.options[key] = tuple(['-s'])
+                elif key == 'eloop_term_disable':
+                    self.options[key] = tuple(['-E'])
 
     def write_configs(self, config_dict, options):
         """
@@ -327,6 +332,14 @@ if __name__ == '__main__':
         'key_data': True,
         'timestamp': False,
         'version': False,
-        'mute': True}
+        'mute': True,
+        'eloop_term_disable': True}
     HOSTAPD_OBJ = Hostapd()
     HOSTAPD_OBJ.start(HOSTAPD_CONFIG_DICT, HOSTAPD_OPTION_DICT)
+    import time
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            HOSTAPD_OBJ.stop()
+            break

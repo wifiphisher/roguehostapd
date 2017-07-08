@@ -36,6 +36,10 @@ ifdef CONFIG_KARMA_ATTACK
 CFLAGS += -DCONFIG_KARMA_ATTACK
 endif
 
+ifdef CONFIG_WIFIPHISHER_COMMON
+CFLAGS += -DCONFIG_WIFIPHISHER_COMMON
+endif
+
 ifndef CONFIG_NO_GITVER
 # Add VERSION_STR postfix for builds from a git repository
 ifeq ($(wildcard ../.git),../.git)

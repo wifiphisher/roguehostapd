@@ -37,6 +37,9 @@ struct hapd_global {
 
 static struct hapd_global global;
 
+#ifdef CONFIG_WIFIPHISHER_COMMON
+static int g_disable_signal_handler = 0;
+#endif /* CONFIG_WIFIPHISHER_COMMON */
 
 #ifndef CONFIG_NO_HOSTAPD_LOGGER
 static void hostapd_logger_cb(void *ctx, const u8 *addr, unsigned int module,
@@ -354,7 +357,16 @@ static int hostapd_global_init(struct hapd_interfaces *interfaces,
 	eloop_register_signal(SIGHUP, handle_reload, interfaces);
 	eloop_register_signal(SIGUSR1, handle_dump_state, interfaces);
 #endif /* CONFIG_NATIVE_WINDOWS */
+
+#ifdef CONFIG_WIFIPHISHER_COMMON
+    /* only register the eloop terminate when
+     * g_disable_signal_handler is False   */
+    if (!g_disable_signal_handler) {
+	    eloop_register_signal_terminate(handle_term, interfaces);
+    }
+#else
 	eloop_register_signal_terminate(handle_term, interfaces);
+#endif /* CONFIG_WIFIPHISHER_COMMON */
 
 #ifndef CONFIG_NATIVE_WINDOWS
 	openlog("hostapd", 0, LOG_DAEMON);
@@ -486,6 +498,10 @@ static void usage(void)
 		"   -i   list of interface names to use\n"
 		"   -S   start all the interfaces synchronously\n"
 		"   -t   include timestamps in some debug messages\n"
+#ifdef CONFIG_WIFIPHISHER_COMMON
+        "   -s   silience all the hostapd debug messages\n"
+        "   -E   end hostapd by the process control it.\n"
+#endif /* CONFIG_WIFIPHISHER_COMMON */
 		"   -v   show hostapd version\n");
 
 	exit(1);
@@ -661,7 +677,11 @@ int main(int argc, char *argv[])
 	dl_list_init(&interfaces.global_ctrl_dst);
 
 	for (;;) {
-		c = getopt(argc, argv, "b:Bde:f:hi:KP:STtu:vg:G:s");
+#ifdef CONFIG_WIFIPHISHER_COMMON
+		c = getopt(argc, argv, "b:Bde:f:hi:KP:STtu:vg:G:Es");
+#else
+		c = getopt(argc, argv, "b:Bde:f:hi:KP:STtu:vg:G:");
+#endif
 		if (c < 0)
 			break;
 		switch (c) {
@@ -730,10 +750,16 @@ int main(int argc, char *argv[])
 							&if_names_size, optarg))
 				goto out;
 			break;
+#ifdef CONFIG_WIFIPHISHER_COMMON
         case 's':
             /* mute all the hostapd stdout */
             wpa_debug_silience = 1;
             break;
+        case 'E':
+            /* End the hostapd process by the process control it */
+            g_disable_signal_handler = 1;
+            break;
+#endif /* CONFIG_WIFIPHISHER_COMMON */
 		default:
 			usage();
 			break;

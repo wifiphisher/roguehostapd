@@ -12,6 +12,10 @@
 # KARMA attack
 CONFIG_KARMA_ATTACK=y
 
+# Wifiphisher Configuration
+# Common configuration for the wifiphisher setting
+CONFIG_WIFIPHISHER_COMMON=y
+
 # Driver interface for Host AP driver
 CONFIG_DRIVER_HOSTAP=y
 
