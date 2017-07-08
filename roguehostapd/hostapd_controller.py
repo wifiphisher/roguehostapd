@@ -6,7 +6,7 @@ This module was made to wrap the hostapd
 import os
 import threading
 import ctypes
-import hostapd_constants
+import roguehostapd.hostapd_constants as hostapd_constants
 
 
 class KarmaData(ctypes.Structure):
@@ -61,6 +61,7 @@ class HostapdConfig(object):
             'key_data': None,
             'timestamp': None,
             'version': None,
+            'mute': None,
             }
 
         # hostapd debug level
@@ -141,6 +142,8 @@ class HostapdConfig(object):
                     self.options[key] = tuple(['-t'])
                 elif key == 'version':
                     self.options[key] = tuple(['-v'])
+                elif key == 'mute':
+                    self.options[key] = tuple(['-s'])
 
     def write_configs(self, config_dict, options):
         """
@@ -290,10 +293,6 @@ class Hostapd(object):
         self.hostapd_lib.get_assoc_karma_data.restype = ctypes.POINTER(
             KarmaData)
 
-        # turn off the debug log if debug level not specified
-        if not self.config_obj.debug_level:
-            self.hostapd_lib.stdout_off()
-
         # start the hostapd thread
         self.hostapd_thread = threading.Thread(
             target=self.hostapd_lib.main, args=(len(hostapd_cmd), hostapd_cmd))
@@ -310,10 +309,6 @@ class Hostapd(object):
         ..note: the stop function uses the eloop_terminate function in hostapd
         shared library to stop AP.
         """
-        # turn off the hostapd debug log if the debug_level is not turnned on
-        if not self.config_obj.debug_level:
-            self.hostapd_lib.stdout_off()
-
         self.hostapd_lib.eloop_terminate()
 
         if os.path.isfile(hostapd_constants.HOSTAPD_CONF_PATH):
@@ -325,13 +320,13 @@ if __name__ == '__main__':
         'ssid': 'hahaha',
         'interface': 'wlan0',
         'karma_enable': 1,
-        'wpa_passphrase': '12345678'}
+        }
 
     HOSTAPD_OPTION_DICT = {
-        'debug_level': hostapd_constants.HOSTAPD_DEBUG_VERBOSE,
+        'debug_level': hostapd_constants.HOSTAPD_DEBUG_OFF,
         'key_data': True,
         'timestamp': False,
-        'version': False}
-
+        'version': False,
+        'mute': True}
     HOSTAPD_OBJ = Hostapd()
     HOSTAPD_OBJ.start(HOSTAPD_CONFIG_DICT, HOSTAPD_OPTION_DICT)

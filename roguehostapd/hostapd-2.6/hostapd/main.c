@@ -661,7 +661,7 @@ int main(int argc, char *argv[])
 	dl_list_init(&interfaces.global_ctrl_dst);
 
 	for (;;) {
-		c = getopt(argc, argv, "b:Bde:f:hi:KP:STtu:vg:G:");
+		c = getopt(argc, argv, "b:Bde:f:hi:KP:STtu:vg:G:s");
 		if (c < 0)
 			break;
 		switch (c) {
@@ -730,6 +730,10 @@ int main(int argc, char *argv[])
 							&if_names_size, optarg))
 				goto out;
 			break;
+        case 's':
+            /* mute all the hostapd stdout */
+            wpa_debug_silience = 1;
+            break;
 		default:
 			usage();
 			break;

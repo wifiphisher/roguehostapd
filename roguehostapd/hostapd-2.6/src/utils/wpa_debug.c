@@ -32,7 +32,8 @@ static FILE *wpa_debug_tracing_file = NULL;
 int wpa_debug_level = MSG_INFO;
 int wpa_debug_show_keys = 0;
 int wpa_debug_timestamp = 0;
-
+/* wifiphisher silience all the stdout */
+int wpa_debug_silience = 0;
 
 #ifdef CONFIG_ANDROID_LOG
 
@@ -204,7 +205,9 @@ void wpa_debug_close_linux_tracing(void)
 void wpa_printf(int level, const char *fmt, ...)
 {
 	va_list ap;
-
+    if (wpa_debug_silience) {
+        return; 
+    }
 	va_start(ap, fmt);
 	if (level >= wpa_debug_level) {
 #ifdef CONFIG_ANDROID_LOG

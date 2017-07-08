@@ -14,6 +14,7 @@
 extern int wpa_debug_level;
 extern int wpa_debug_show_keys;
 extern int wpa_debug_timestamp;
+extern int wpa_debug_silience;
 
 /* Debugging function - conditional printf and hex dump. Driver wrappers can
  * use these for debugging purposes. */
