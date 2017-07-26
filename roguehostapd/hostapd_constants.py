@@ -25,3 +25,9 @@ HOSTAPD_DIR = 'hostapd-2.6/hostapd'
 HOSTAPD_SHARED_LIB_PATH = os.path.join(HOSTAPD_DIR, 'libhostapd.so')
 HOSTAPD_EXE_PATH = os.path.join(HOSTAPD_DIR, 'hostapd')
 HOSTAPD_CONF_PATH = '/tmp/hostapd.conf'
+
+# Console colors
+
+WHITE = '\033[0m'  # white (normal)
+RED = '\033[31m'   # red
+TAN = '\033[93m'   # tan
