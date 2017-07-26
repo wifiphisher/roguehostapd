@@ -34,7 +34,9 @@ class HostapdBuild(build):
 setup(
     name='roguehostapd',
     packages=['roguehostapd'],
-    version='1.0.2',
+    version='1.1.2',
+    package_data={'hostapd': ['hostapd-2.6/hostapd/libhostapd.so']},
+    include_package_data=True,
     description='Hostapd wrapper for hostapd',
     url='https://github.com/wifiphisher/roguehostapd',
     author='Anakin',
