@@ -5,10 +5,11 @@ Roguehostapd is a fork of hostapd, the famous user space software access point. 
 
 To build the latest development version type the following commands:
 ```bash
-git clone https://github.com/wifiphisher/hostapd_binder.git # Download the latest version
-cd hostapd_binder # Switch to the hostapd_binder directory
-python setup.py build # Build the shared library of hostapd
+git clone https://github.com/wifiphisher/roguehostapd.git # Download the latest version
+cd roguehostapd # Switch to the roguehostapd directory
+python setup.py install # Build the shared library of hostapd
 ```
+
 ## Usage
 
 ***
