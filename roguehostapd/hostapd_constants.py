@@ -31,3 +31,7 @@ HOSTAPD_CONF_PATH = '/tmp/hostapd.conf'
 WHITE = '\033[0m'  # white (normal)
 RED = '\033[31m'   # red
 TAN = '\033[93m'   # tan
+
+# build related
+MAKE_CMD = ["make", "hostapd_lib"]
+CP_CMD = ['cp', 'defconfig', '.config']
