@@ -70,6 +70,33 @@ class HostapdConfig(object):
         # hostapd debug level
         self.debug_level = hostapd_constants.HOSTAPD_DEBUG_OFF
 
+    def update_wps_configuration(self):
+        """
+        Update the WPS configuration for hostapd
+
+        :param self: A HostapdConfig object
+        :param config_dict: hostapd configuration dictionary
+        :type self: HostapdConfig
+        :type config_dict: dict
+        :return: None
+        :rtype: None
+        """
+
+        # enable WPS
+        self.configuration_dict['wps_state'] = '2'
+        self.configuration_dict['ap_setup_locked'] = '1'
+        self.configuration_dict['uuid'] = '12345678-9abc-def0-1234-56789abcdef0'
+        self.configuration_dict['device_name'] = 'Wireless AP'
+        self.configuration_dict['manufacturer'] = 'Company'
+        self.configuration_dict['model_name'] = 'WAP'
+        self.configuration_dict['model_number'] = '123'
+        self.configuration_dict['serial_number'] = '12345'
+        self.configuration_dict['device_type'] = '6-0050F204-1'
+        self.configuration_dict['os_version'] = '01020300'
+        self.configuration_dict['config_methods'] =\
+            'label virtual_display virtual_push_button keypad'
+        self.configuration_dict['eap_server'] = '1'
+
     def update_security_info(self, config_dict):
         """
         Update the security configuration if passphrase is specified
@@ -81,6 +108,9 @@ class HostapdConfig(object):
         :return: None
         :rtype: None
         """
+
+        # update WPS information
+        self.update_wps_configuration()
 
         if 'wpa_passphrase' in config_dict and config_dict['wpa_passphrase']:
             self.configuration_dict['wpa_key_mgmt'] = "WPA-PSK"

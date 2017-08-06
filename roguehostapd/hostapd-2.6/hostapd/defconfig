@@ -121,11 +121,11 @@ CONFIG_EAP_TTLS=y
 #CONFIG_EAP_FAST=y
 
 # Wi-Fi Protected Setup (WPS)
-#CONFIG_WPS=y
+CONFIG_WPS=y
 # Enable UPnP support for external WPS Registrars
-#CONFIG_WPS_UPNP=y
+CONFIG_WPS_UPNP=y
 # Enable WPS support with NFC config method
-#CONFIG_WPS_NFC=y
+CONFIG_WPS_NFC=y
 
 # EAP-IKEv2
 #CONFIG_EAP_IKEV2=y

