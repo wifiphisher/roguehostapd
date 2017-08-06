@@ -3,6 +3,7 @@
 Module for running or stopping hostapd
 """
 
+import time
 import argparse
 import sys
 import hostapd_controller
@@ -93,9 +94,14 @@ def run():
     args = parse_args()
     check_args(args)
     hostapd_dict, options = get_configuration_dicts(vars(args))
+    options['eloop_term_disable'] = True
     hostapd_obj = hostapd_controller.Hostapd()
     hostapd_obj.start(hostapd_dict, options)
-    hostapd_obj.hostapd_thread.join()
-    hostapd_obj.stop()
 
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            hostapd_obj.stop()
+            break
 run()
