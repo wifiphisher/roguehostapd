@@ -286,6 +286,16 @@ class Hostapd(object):
         mac_ssid_pairs = self._parse_karma_data(karma_data)
         return mac_ssid_pairs
 
+    def is_alive(self):
+        """
+        API for check if the hostapd thread is running
+        :param self: A Hostapd object
+        :type self: Hostapd
+        :return: True if the hostapd is running else False
+        :rtype: bool
+        """
+        return self.hostapd_thread.is_alive()
+
     def start(self, hostapd_config, options):
         """
         Start the hostapd process
@@ -345,6 +355,8 @@ class Hostapd(object):
         shared library to stop AP.
         """
         self.hostapd_lib.eloop_terminate()
+        if self.hostapd_thread.is_alive():
+            self.hostapd_thread.join(5)
 
         if os.path.isfile(hostapd_constants.HOSTAPD_CONF_PATH):
             os.remove(hostapd_constants.HOSTAPD_CONF_PATH)
