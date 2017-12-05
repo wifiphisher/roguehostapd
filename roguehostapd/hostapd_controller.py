@@ -52,7 +52,9 @@ class HostapdConfig(object):
             'wpa_passphrase': '',
             'wpa_key_mgmt': '',
             'wpa_pairwise': '',
-            'wpa': ''
+            'wpa': '',
+            # the mac addresses we want to block
+            'deny_macs': [],
             }
 
         # configuration for hostapd command line options
@@ -67,17 +69,38 @@ class HostapdConfig(object):
             'eloop_term_disable': None,
             }
 
+        # custom action and relies on transformation by roguehostapd
+        self.custom_action = {
+            # the deny mac addresses
+            'deny_macs': self.update_black_macs,
+            }
         # hostapd debug level
         self.debug_level = hostapd_constants.HOSTAPD_DEBUG_OFF
+
+    def update_black_macs(self, output_fp):
+        """
+        Update the black mac addresses for hostapd
+
+        :param self: A HostapdConfig object
+        :param output_fp: Output file pointer
+        :type self: HostapdConfig
+        :type output_fp: file
+        :return: None
+        :rtype: None
+        """
+
+        output_fp.write('macaddr_acl=0\n')
+        output_fp.write('deny_mac_file='+hostapd_constants.DENY_MACS_PATH+'\n')
+        with open(hostapd_constants.DENY_MACS_PATH, 'w') as writer:
+            for mac_addr in self.configuration_dict['deny_macs']:
+                writer.write(mac_addr+'\n')
 
     def update_wps_configuration(self):
         """
         Update the WPS configuration for hostapd
 
         :param self: A HostapdConfig object
-        :param config_dict: hostapd configuration dictionary
         :type self: HostapdConfig
-        :type config_dict: dict
         :return: None
         :rtype: None
         """
@@ -200,7 +223,11 @@ class HostapdConfig(object):
         with open(hostapd_constants.HOSTAPD_CONF_PATH, 'w') as conf:
             for key, value in self.configuration_dict.iteritems():
                 if value:
-                    conf.write(key + '=' + str(value) + '\n')
+                    if key not in self.custom_action:
+                        conf.write(key + '=' + str(value) + '\n')
+                    else:
+                        # callback for the custom action
+                        self.custom_action[key](conf)
 
     @classmethod
     def is_ssid_valid(cls, ssid):
@@ -360,13 +387,16 @@ class Hostapd(object):
 
         if os.path.isfile(hostapd_constants.HOSTAPD_CONF_PATH):
             os.remove(hostapd_constants.HOSTAPD_CONF_PATH)
+        if os.path.isfile(hostapd_constants.DENY_MACS_PATH):
+            os.remove(hostapd_constants.DENY_MACS_PATH)
 
 if __name__ == '__main__':
 
     HOSTAPD_CONFIG_DICT = {
-        'ssid': 'hahaha',
+        'ssid': 'test',
         'interface': 'wlan0',
         'karma_enable': 1,
+        'deny_macs': ['00:00:00:11:22:33']
         }
 
     HOSTAPD_OPTION_DICT = {

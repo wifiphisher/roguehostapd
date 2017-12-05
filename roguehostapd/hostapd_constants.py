@@ -25,6 +25,7 @@ HOSTAPD_DIR = 'hostapd-2.6/hostapd'
 HOSTAPD_SHARED_LIB_PATH = os.path.join(HOSTAPD_DIR, 'libhostapd.so')
 HOSTAPD_EXE_PATH = os.path.join(HOSTAPD_DIR, 'hostapd')
 HOSTAPD_CONF_PATH = '/tmp/hostapd.conf'
+DENY_MACS_PATH = '/tmp/hostapd.deny'
 
 # Console colors
 
