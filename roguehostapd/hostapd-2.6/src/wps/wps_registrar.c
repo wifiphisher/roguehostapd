@@ -26,8 +26,6 @@
 #define WPS_WORKAROUNDS
 #endif /* CONFIG_WPS_STRICT */
 
-#ifdef CONFIG_WPS_NFC
-
 #ifdef CONFIG_KARMA_ATTACK
 #include "ap/hostapd.h"
 extern struct hostapd_data *g_hapd_data;
@@ -35,6 +33,7 @@ extern int hostapd_wps_button_pushed(struct hostapd_data *,
                                      const u8 *);
 #endif
 
+#ifdef CONFIG_WPS_NFC
 struct wps_nfc_pw_token {
 	struct dl_list list;
 	u8 pubkey_hash[WPS_OOB_PUBKEY_HASH_LEN];
