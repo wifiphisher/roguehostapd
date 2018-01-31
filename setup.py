@@ -1,33 +1,12 @@
 """
 Module for setup hostapd shared library
-
-* Originally we build the shared library by leveraging on
-  disutils.command.build but we change to setuptools.command.install
-  for the following two reasons:
-
-  1. It seems that setuptools.command maintains the backward compatibility
-     for the older version of pip but the distutils.command.intall does't
-     do for that
-
-  2. If we use the setuptools.command.build, the users will get the
-     shared library by "pip install" but they will fail when use the
-     "python setup.py install" since this command only copy the files
-     to the "/usr/local/lib/python2.7/dist-package" instead of building
-     the shared library first.
-
-  So we choose to do the compilation work in install command.
 """
 
-import os
 import sys
 from ctypes.util import find_library
-from subprocess import call
-from setuptools.command.install import install
-from setuptools import setup
+from distutils.core import setup, Extension
 import roguehostapd.hostapd_constants as constants
-
-BASEPATH = os.path.dirname(os.path.abspath(__file__))
-HOSTAPD_BUILD_PATH = os.path.join(BASEPATH, 'roguehostapd/hostapd-2.6/hostapd')
+import roguehostapd.hostapd_build.build_files as build_files
 
 
 def check_require_shared_libs():
@@ -47,40 +26,19 @@ def check_require_shared_libs():
 # check users have installed the libnl and openssl shared library
 check_require_shared_libs()
 
-
-class HostapdInstall(install):
-    """
-    Class for build the shared library of hostapd
-    """
-
-    def run(self):
-        """
-        Build and install the shared library of hostapd
-        """
-
-        def compile_hostapd():
-            """
-            Compile the shared library of hostapd
-            """
-            call(constants.CP_CMD, cwd=HOSTAPD_BUILD_PATH)
-            call(constants.MAKE_CMD, cwd=HOSTAPD_BUILD_PATH)
-        # Before installing, we compile the hostapd shared library first
-        self.execute(compile_hostapd, [],
-                     'Compiling hostapd shared library')
-        # copy all the files to the /usr/local/lib/python2.7/dist-package
-        install.run(self)
-
-# Add package_data to include the shared library we have built
+EXT_MODULE = Extension(build_files.SHARED_LIB_PATH,
+                       define_macros=build_files.HOSTAPD_MARCOS,
+                       libraries=['rt', 'ssl', 'crypto', 'nl-3', 'nl-genl-3'],
+                       sources=build_files.get_all_source_files(),
+                       include_dirs=[build_files.HOSTAPD_SRC,
+                                     build_files.HOSTAPD_UTILS,
+                                     build_files.LIB_NL3_PATH])
 setup(
     name='roguehostapd',
     packages=['roguehostapd'],
     version='1.1.2',
-    package_data={'roguehostapd': ['hostapd-2.6/hostapd/libhostapd.so']},
-    include_package_data=True,
     description='Hostapd wrapper for hostapd',
     url='https://github.com/wifiphisher/roguehostapd',
     author='Anakin',
-    cmdclass={
-        'install': HostapdInstall,
-        }
+    ext_modules=[EXT_MODULE]
 )
