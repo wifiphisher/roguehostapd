@@ -6,7 +6,8 @@ Module for running or stopping hostapd
 import time
 import argparse
 import sys
-import hostapd_controller
+import roguehostapd
+from roguehostapd import hostapd_controller
 
 
 def parse_args():
