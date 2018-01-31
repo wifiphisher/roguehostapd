@@ -5,7 +5,7 @@ import os
 
 
 # define directory marcos
-HOSTAPD_DIR = 'roguehostapd/hostapd-2.6'
+HOSTAPD_DIR = 'roguehostapd/hostapd-2_6'
 HOSTAPD_SRC = os.path.join(HOSTAPD_DIR, 'src')
 HOSTAPD_MAIN = os.path.join(HOSTAPD_DIR, 'hostapd')
 HOSTAPD_AP = os.path.join(HOSTAPD_SRC, 'ap')
