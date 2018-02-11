@@ -1,10 +1,10 @@
 """
-Module for defining the required hostapd marcos and source files
+Module for defining the required hostapd macros and source files
 """
 import os
 
 
-# define directory marcos
+# define directory macros
 HOSTAPD_DIR = 'roguehostapd/hostapd-2_6'
 HOSTAPD_SRC = os.path.join(HOSTAPD_DIR, 'src')
 HOSTAPD_MAIN = os.path.join(HOSTAPD_DIR, 'hostapd')
@@ -136,8 +136,8 @@ WPS_FILES = ['wps.c',
              'http_client.c',
              'httpread.c',
              'wps_upnp_ap.c']
-# required hostapd marcos
-HOSTAPD_MARCOS = [('HOSTAPD', '1'),
+# required hostapd macros
+HOSTAPD_MACROS = [('HOSTAPD', '1'),
                   ('CONFIG_NO_VLAN', '1'),
                   ('CONFIG_CTRL_IFACE', '1'),
                   ('CONFIG_CTRL_IFACE_UNIX', '1'),

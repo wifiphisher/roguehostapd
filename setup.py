@@ -27,7 +27,7 @@ def check_require_shared_libs():
 check_require_shared_libs()
 
 EXT_MODULE = Extension(build_files.SHARED_LIB_PATH,
-                       define_macros=build_files.HOSTAPD_MARCOS,
+                       define_macros=build_files.HOSTAPD_MACROS,
                        libraries=['rt', 'ssl', 'crypto', 'nl-3', 'nl-genl-3'],
                        sources=build_files.get_all_source_files(),
                        include_dirs=[build_files.HOSTAPD_SRC,
