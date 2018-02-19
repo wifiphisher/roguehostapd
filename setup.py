@@ -6,7 +6,8 @@ import sys
 from ctypes.util import find_library
 from distutils.core import setup, Extension
 import roguehostapd.hostapd_constants as constants
-import roguehostapd.hostapd_build.build_files as build_files
+import roguehostapd.buildutil.buildcommon as buildcommon
+import roguehostapd.buildutil.build_files as build_files
 
 
 def check_require_shared_libs():
@@ -33,12 +34,13 @@ EXT_MODULE = Extension(build_files.SHARED_LIB_PATH,
                        include_dirs=[build_files.HOSTAPD_SRC,
                                      build_files.HOSTAPD_UTILS,
                                      build_files.LIB_NL3_PATH])
-setup(
-    name='roguehostapd',
-    packages=['roguehostapd'],
-    version='1.1.2',
-    description='Hostapd wrapper for hostapd',
-    url='https://github.com/wifiphisher/roguehostapd',
-    author='Anakin',
-    ext_modules=[EXT_MODULE]
-)
+with buildcommon.nostdout():
+    setup(
+        name='roguehostapd',
+        packages=['roguehostapd'],
+        version='1.1.2',
+        description='Hostapd wrapper for hostapd',
+        url='https://github.com/wifiphisher/roguehostapd',
+        author='Anakin',
+        ext_modules=[EXT_MODULE]
+    )
