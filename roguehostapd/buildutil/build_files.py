@@ -84,7 +84,6 @@ UTIL_FILES = ['eloop.c',
               'ip_addr.c',
               'wpabuf.c',
               'wpa_debug.c',
-              'silent.c',
               'radiotap.c',
               'base64.c',
               'uuid.c']

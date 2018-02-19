@@ -173,10 +173,6 @@ OBJS += ../src/utils/wpabuf.o
 OBJS += ../src/utils/os_$(CONFIG_OS).o
 OBJS += ../src/utils/ip_addr.o
 
-# Add for stdout silence
-OBJS += ../src/utils/silent.o
-OBJS_c += ../src/utils/silent.o
-
 OBJS += ../src/common/ieee802_11_common.o
 OBJS += ../src/common/wpa_common.o
 OBJS += ../src/common/hw_features_common.o
