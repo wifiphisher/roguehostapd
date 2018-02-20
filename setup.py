@@ -2,20 +2,22 @@
 Module for setup hostapd shared library
 """
 
+import shutil
 from distutils.core import setup
 import roguehostapd.hostapd_constants as constants
 import roguehostapd.buildutil.buildcommon as buildcommon
+import roguehostapd.buildutil.buildexception as buildexception
 
 # define project information
 NAME = 'roguehostapd'
 PACKAGES = ['roguehostapd']
 VERSION = '1.1.2'
-DESCRIPTION = 'Hostapd wrapper for hostapd',
-URL = 'https://github.com/wifiphisher/roguehostapd',
-AUTHOR = 'Anakin',
-EXT_MODULE = buildcommon.get_extension_module()
+DESCRIPTION = 'Hostapd wrapper for hostapd'
+URL = 'https://github.com/wifiphisher/roguehostapd'
+AUTHOR = 'Anakin'
 
-if EXT_MODULE:
+try:
+    EXT_MODULE = buildcommon.get_extension_module()
     # hide the stdout of building process
     with buildcommon.nostdout():
         setup(
@@ -27,16 +29,21 @@ if EXT_MODULE:
             author=AUTHOR,
             ext_modules=EXT_MODULE
         )
-# when the extension library build fail we still need to setup some of the pure python
-# scripts so that wifiphisher can function well
-else:
+except buildexception.SharedLibMissError as exobj:
     print ("[" + constants.RED + "!" + constants.WHITE + "] " +
-           " hostapd library build fail due to missing netlink/openssl libraries!")
-    setup(
-        name=NAME,
-        packages=PACKAGES,
-        version=VERSION,
-        description=DESCRIPTION,
-        url=URL,
-        author=AUTHOR,
-    )
+           ("The development package for " + exobj.libname +
+            " is missing. Please download it and restart the compilation."
+            " Now if you want, you can provide the exact command for Debian-based systems."
+            ' For example, "if you are on Debian-based system: \'apt-get install{}\'."'.format(
+                "".join(" " + package for package in exobj.packages))))
+    with buildcommon.nostdout():
+        setup(
+            name=NAME,
+            packages=PACKAGES,
+            version=VERSION,
+            description=DESCRIPTION,
+            url=URL,
+            author=AUTHOR,
+        )
+finally:
+    shutil.rmtree('tmp')

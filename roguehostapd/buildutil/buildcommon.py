@@ -6,15 +6,16 @@ import contextlib
 import io
 import os
 import sys
+import shutil
 from textwrap import dedent
 import tempfile
-import shutil
 import distutils.sysconfig
 import distutils.ccompiler
 from distutils.core import Extension
 from distutils.errors import CompileError, LinkError
-from subprocess import check_call
 import roguehostapd.buildutil.build_files as build_files
+import roguehostapd.buildutil.buildexception as buildexception
+
 
 # code for checking if libnl-dev and libnl-genl-dev exist
 LIBNL_CODE = dedent("""
@@ -68,7 +69,7 @@ def check_required_library(libname, libraries=None, include_dir=None):
     :rtype: bool
     """
     build_success = True
-    tmp_dir = tempfile.mkdtemp(prefix='/tmp/tmp_' + libname + '_')
+    tmp_dir = tempfile.mkdtemp(prefix='tmp_' + libname + '_')
     bin_file_name = os.path.join(tmp_dir, 'test_' + libname)
     file_name = bin_file_name + '.c'
     with open(file_name, 'w') as filep:
@@ -96,24 +97,20 @@ def get_extension_module():
     """
     Get hostapd extension module
     :return: list of extension for hostapd
-    :rtype: list of Extension if build success else None
-    ..note: Before building the extension module, this function will do
-    the sanity check for the exist of openssl and libnl
+    :rtype: list of Extension if build success
+    ..note: if the required shared library is missing this function will
+    raise the custom exception: SharedLibMissError
     """
 
     if not check_required_library("netlink", ["nl-3", "nl-genl-3"],
                                   [build_files.LIB_NL3_PATH]):
-        check_call(['apt-get', 'install', '-y', 'libnl-3-dev'])
-        check_call(['apt-get', 'install', '-y', 'libnl-genl-3-dev'])
+        raise buildexception.SharedLibMissError('netlink', ['libnl-3-dev',
+                                                            'libnl-genl-3-dev'])
     if not check_required_library("openssl", ["ssl"],
                                   [build_files.LIB_SSL_PATH]):
-        check_call(['apt-get', 'install', '-y', 'libssl-dev'])
-    # do the check again
-    if (not check_required_library("netlink", ["nl-3", "nl-genl-3"],
-                                   [build_files.LIB_NL3_PATH])) or\
-       (not check_required_library("openssl", ["ssl"],
-                                   [build_files.LIB_SSL_PATH])):
-        return None
+        raise buildexception.SharedLibMissError("openssl", ['libssl-dev'])
+
+    # required shared libraries exist
     ext_module = Extension(build_files.SHARED_LIB_PATH,
                            define_macros=build_files.HOSTAPD_MACROS,
                            libraries=['rt', 'ssl', 'crypto', 'nl-3', 'nl-genl-3'],
