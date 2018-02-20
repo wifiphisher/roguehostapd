@@ -11,6 +11,8 @@ import roguehostapd.buildutil.buildexception as buildexception
 # define project information
 NAME = 'roguehostapd'
 PACKAGES = ['roguehostapd']
+PACKAGE_DIR = {'roguehostapd': 'roguehostapd'}
+PACKAGE_DATA = {'roguehostapd': ['hostapd-2_6/hostapd/hostapd.conf']}
 VERSION = '1.1.2'
 DESCRIPTION = 'Hostapd wrapper for hostapd'
 URL = 'https://github.com/wifiphisher/roguehostapd'
@@ -23,6 +25,8 @@ try:
         setup(
             name=NAME,
             packages=PACKAGES,
+            package_dir=PACKAGE_DIR,
+            package_data=PACKAGE_DATA,
             version=VERSION,
             description=DESCRIPTION,
             url=URL,
@@ -40,6 +44,8 @@ except buildexception.SharedLibMissError as exobj:
         setup(
             name=NAME,
             packages=PACKAGES,
+            package_dir=PACKAGE_DIR,
+            package_data=PACKAGE_DATA,
             version=VERSION,
             description=DESCRIPTION,
             url=URL,

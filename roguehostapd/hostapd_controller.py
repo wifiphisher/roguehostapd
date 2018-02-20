@@ -5,7 +5,9 @@ This module was made to wrap the hostapd
 
 import os
 import threading
+import collections
 import ctypes
+import re
 import roguehostapd.hostapd_constants as hostapd_constants
 
 
@@ -38,24 +40,11 @@ class HostapdConfig(object):
         :return: None
         :rtype: None
         """
+
         # configurations for hostapd.conf
-        self.configuration_dict = {
-            # required configurations
-            'ssid': hostapd_constants.SSID,
-            'channel': hostapd_constants.CHANNEL,
-            'beacon_int': hostapd_constants.BEACON_INT,
-            'hw_mode': hostapd_constants.HW_MODE,
-            'interface': hostapd_constants.INTERFACE,
-            # karma attack
-            'karma_enable': hostapd_constants.KARMA_ENABLE,
-            # security related configuratoins
-            'wpa_passphrase': '',
-            'wpa_key_mgmt': '',
-            'wpa_pairwise': '',
-            'wpa': '',
-            # the mac addresses we want to block
-            'deny_macs': [],
-            }
+        self.configuration_dict = collections.defaultdict()
+        # initialize the hostapd configuration
+        self.initialize_hostapd_config()
 
         # configuration for hostapd command line options
         self.options = {
@@ -76,6 +65,37 @@ class HostapdConfig(object):
             }
         # hostapd debug level
         self.debug_level = hostapd_constants.HOSTAPD_DEBUG_OFF
+
+    def initialize_hostapd_config(self):
+        """
+        Parse the hostapd.conf file in the hostapd source code and
+        update to the attribute configuation_dict
+
+        :param self: A HostapdConfig object
+        :type self: HostapdConfig
+        :return: None
+        :rtype: None
+        """
+
+        work_dir = os.path.dirname(os.path.abspath(__file__))
+        hostapd_config = os.path.join(work_dir,
+                                      hostapd_constants.HOSTAPD_DIR,
+                                      'hostapd.conf')
+        # initialize the hostapd configuration dictionary
+        with open(hostapd_config, 'r') as filep:
+            for line in filep:
+                m_obj = re.match(r'#([\S-]+)=[\S-].*$', line)
+                if m_obj:
+                    key = m_obj.group(1)
+                    self.configuration_dict[key] = ''
+        # initialize the basic information
+        self.configuration_dict['ssid'] = hostapd_constants.SSID
+        self.configuration_dict['channel'] = hostapd_constants.CHANNEL
+        self.configuration_dict['beacon_int'] = hostapd_constants.BEACON_INT
+        self.configuration_dict['hw_mode'] = hostapd_constants.HW_MODE
+        self.configuration_dict['interface'] = hostapd_constants.INTERFACE
+        self.configuration_dict['karma_enable'] = hostapd_constants.KARMA_ENABLE
+        self.configuration_dict['deny_macs'] = []
 
     def update_black_macs(self, output_fp):
         """
@@ -340,6 +360,7 @@ class Hostapd(object):
         """
 
         self.config_obj = HostapdConfig()
+        # update the hostapd configuration based on user input
         self.config_obj.write_configs(hostapd_config, options)
 
         work_dir = os.path.dirname(os.path.abspath(__file__))
