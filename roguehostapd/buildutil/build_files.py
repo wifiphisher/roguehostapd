@@ -21,6 +21,7 @@ HOSTAPD_EAP_COMMON = os.path.join(HOSTAPD_SRC, 'eap_common')
 HOSTAPD_CRYPTO = os.path.join(HOSTAPD_SRC, 'crypto')
 SHARED_LIB_PATH = os.path.join(HOSTAPD_MAIN, 'libhostapd')
 LIB_NL3_PATH = '/usr/include/libnl3'
+LIB_SSL_PATH = '/usr/include/openssl'
 
 # files under hostapd-2.6/hostapd
 MAIN_FILES = ['main.c', 'config_file.c', 'eap_register.c', 'ctrl_iface.c']
