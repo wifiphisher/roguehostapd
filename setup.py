@@ -4,6 +4,8 @@ Module for setup hostapd shared library
 
 import shutil
 from distutils.core import setup
+from distutils.command.install import install
+from distutils.command.build_ext import build_ext
 import roguehostapd.hostapd_constants as constants
 import roguehostapd.buildutil.buildcommon as buildcommon
 import roguehostapd.buildutil.buildexception as buildexception
@@ -31,6 +33,8 @@ try:
             description=DESCRIPTION,
             url=URL,
             author=AUTHOR,
+            cmdclass={'build_ext': build_ext,
+                      'install': install},
             ext_modules=EXT_MODULE
         )
 except buildexception.SharedLibMissError as exobj:
