@@ -3,8 +3,12 @@ Module for setup hostapd shared library
 """
 
 import shutil
-from distutils.core import setup
-from distutils.command.install import install
+try:
+    from setuptools import setup
+    from setuptools.command.install import install
+except ImportError:
+    from distutils.core import setup
+    from distutils.command.install import install
 from distutils.command.build_ext import build_ext
 import roguehostapd.hostapd_constants as constants
 import roguehostapd.buildutil.buildcommon as buildcommon
@@ -12,7 +16,9 @@ import roguehostapd.buildutil.buildexception as buildexception
 
 # define project information
 NAME = 'roguehostapd'
-PACKAGES = ['roguehostapd']
+PACKAGES = ['roguehostapd',
+            'examples',
+            'roguehostapd.buildutil']
 PACKAGE_DIR = {'roguehostapd': 'roguehostapd'}
 PACKAGE_DATA = {'roguehostapd': ['hostapd-2_6/hostapd/hostapd.conf']}
 VERSION = '1.1.2'
@@ -22,7 +28,6 @@ AUTHOR = 'Anakin'
 
 try:
     EXT_MODULE = buildcommon.get_extension_module()
-    # hide the stdout of building process
     with buildcommon.nostdout():
         setup(
             name=NAME,

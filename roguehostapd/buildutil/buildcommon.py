@@ -11,7 +11,10 @@ from textwrap import dedent
 import tempfile
 import distutils.sysconfig
 import distutils.ccompiler
-from distutils.core import Extension
+try:
+    from setuptools import Extension
+except ImportError:
+    from distutils.core import Extension
 from distutils.errors import CompileError, LinkError
 import roguehostapd.buildutil.build_files as build_files
 import roguehostapd.buildutil.buildexception as buildexception
