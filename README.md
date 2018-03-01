@@ -64,7 +64,7 @@ Following are all the options along with their descriptions (also available with
 |-i INTERFACE| --interface INTERFACE| Select the interface for the spawn rogue AP. Example: -i wlan0|
 |-pK WPA_PASSPHRASE| --wpa_passphrase WPA_PASSPHRASE| Define the password for the spawn rogue AP.|
 |-kA|| Enabling the KARMA attack|
-|-d {0, 1, 2}|--debug_level {0, 1, 2}| Enabling the verbose debug log: --0 disable all the log --1 enable the debug log, --2 enable verbose debug log|
+|-dV|--debug-verbose| Enabling the verbose debug log|
 |-K|--key_data|Include key data in debug messages|
 |-t|--timestamp|Include timestamps in some debug messages|
 |-v|--version|Show hostapd version|

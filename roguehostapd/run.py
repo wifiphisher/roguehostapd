@@ -6,7 +6,6 @@ Module for running or stopping hostapd
 import time
 import argparse
 import sys
-import roguehostapd
 from roguehostapd import hostapd_controller
 
 
@@ -31,18 +30,20 @@ def parse_args():
         "-i", "--interface", help="Interface used to lunch AP")
 
     parser.add_argument(
-        "-pK", "--wpa_passphrase", help="WPA/RSN passhrase")
+        "-pK", "--wpa2password", help="WPA/RSN passhrase")
 
     parser.add_argument(
         "-kA", "--karma_enable", action='store_const', const=1,
-        help="Enabling karma attack")
+        help="Enabling KARMA attack")
+
+    parser.add_argument(
+        "-wP", "--wpspbc", action='store_const', const=1,
+        help="Enabling wpspbc KARMA attack")
 
     # add hostapd command line options
     parser.add_argument(
-        "-d", "--debug_level", type=int,
-        help="Enabling the verbose debug log: --0 disable all the log"
-        "--1 enable the debug log, --2 enable verbose debug log",
-        choices=[0, 1, 2])
+        "-dV", "--debug-verbose", action='store_true',
+        help="Enabling the verbose debug log")
 
     parser.add_argument(
         "-K", "--key_data", action='store_true',
@@ -65,6 +66,7 @@ def get_configuration_dicts(arg_dict):
     """
 
     config_obj = hostapd_controller.HostapdConfig()
+    config_obj.init_config()
     hostapd_dict = {}
     options = {}
     for key, val in arg_dict.iteritems():
@@ -72,7 +74,6 @@ def get_configuration_dicts(arg_dict):
             hostapd_dict[key] = val
         elif key in config_obj.options:
             options[key] = val
-
     return hostapd_dict, options
 
 
@@ -81,8 +82,8 @@ def check_args(args):
     Check the given arguments for logic errors
     """
 
-    if args.wpa_passphrase and (
-            len(args.wpa_passphrase) < 8 or len(args.wpa_passphrase) > 64):
+    if args.wpa2password and (
+            len(args.wpa2password) < 8 or len(args.wpa2password) > 64):
 
         sys.exit('preshared key not valid')
 

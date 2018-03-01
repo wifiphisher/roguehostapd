@@ -10,17 +10,18 @@ except ImportError:
     from distutils.core import setup
     from distutils.command.install import install
 from distutils.command.build_ext import build_ext
-import roguehostapd.hostapd_constants as constants
 import roguehostapd.buildutil.buildcommon as buildcommon
 import roguehostapd.buildutil.buildexception as buildexception
+from roguehostapd.config.hostapdconfig import WHITE, RED
 
 # define project information
 NAME = 'roguehostapd'
 PACKAGES = ['roguehostapd',
             'examples',
+            'roguehostapd.config',
             'roguehostapd.buildutil']
 PACKAGE_DIR = {'roguehostapd': 'roguehostapd'}
-PACKAGE_DATA = {'roguehostapd': ['hostapd-2_6/hostapd/hostapd.conf']}
+PACKAGE_DATA = {'roguehostapd': ['config/hostapd.conf', 'config/config.ini']}
 VERSION = '1.1.2'
 DESCRIPTION = 'Hostapd wrapper for hostapd'
 URL = 'https://github.com/wifiphisher/roguehostapd'
@@ -38,12 +39,13 @@ try:
             description=DESCRIPTION,
             url=URL,
             author=AUTHOR,
+            zip_safe=False,
             cmdclass={'build_ext': build_ext,
                       'install': install},
             ext_modules=EXT_MODULE
         )
 except buildexception.SharedLibMissError as exobj:
-    print ("[" + constants.RED + "!" + constants.WHITE + "] " +
+    print ("[" + RED + "!" + WHITE + "] " +
            ("The development package for " + exobj.libname +
             " is missing. Please download it and restart the compilation."
             " Now if you want, you can provide the exact command for Debian-based systems."
@@ -57,6 +59,7 @@ except buildexception.SharedLibMissError as exobj:
             package_data=PACKAGE_DATA,
             version=VERSION,
             description=DESCRIPTION,
+            zip_safe=False,
             url=URL,
             author=AUTHOR,
         )
