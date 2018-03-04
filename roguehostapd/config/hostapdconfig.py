@@ -77,6 +77,9 @@ class HostapdConfig(object):
         :return: None
         :rtype: None
         """
+        # reset the configurations
+        self.configuration_dict = collections.defaultdict()
+        self.options = collections.defaultdict()
         # initialize the fullset hostapd configuration dictionary
         with open(HOSTAPD_CONFIG_PATH, 'r') as filep:
             for line in filep:
@@ -183,8 +186,11 @@ class HostapdConfig(object):
         ..note: update the command line options
         """
 
-        for key in options:
-            if key in self.options and options[key]:
+        for key in self.options:
+            if key in options and not options[key]:
+                self.options[key] = ''
+            elif (key in self.options and self.options[key]) or\
+                    (key in options and options[key]):
                 if key == 'debug_verbose':
                     self.options['debug_verbose'] = tuple(['-ddd'])
                 elif key == 'key_data':
@@ -197,10 +203,8 @@ class HostapdConfig(object):
                     self.options[key] = tuple(['-s'])
                 elif key == 'eloop_term_disable':
                     self.options[key] = tuple(['-E'])
-            # reset to None if the value of option is False
-            else:
+            elif key in self.options and not self.options[key]:
                 self.options[key] = ''
-
     def write_configs(self, config_dict, options):
         """
         Write the configurations to the file
