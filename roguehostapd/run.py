@@ -6,8 +6,8 @@ Module for running or stopping hostapd
 import time
 import argparse
 import sys
-from roguehostapd import hostapd_controller
-
+import roguehostapd.apctrl as apctrl
+import roguehostapd.config.hostapdconfig as hostapdconfig
 
 def parse_args():
     """
@@ -65,7 +65,7 @@ def get_configuration_dicts(arg_dict):
     Get the dictionary for hostapd.conf and cmd line options
     """
 
-    config_obj = hostapd_controller.HostapdConfig()
+    config_obj = hostapdconfig.HostapdConfig()
     config_obj.init_config()
     hostapd_dict = {}
     options = {}
@@ -97,7 +97,7 @@ def run():
     check_args(args)
     hostapd_dict, options = get_configuration_dicts(vars(args))
     options['eloop_term_disable'] = True
-    hostapd_obj = hostapd_controller.Hostapd()
+    hostapd_obj = apctrl.Hostapd()
     hostapd_obj.start(hostapd_dict, options)
 
     while True:
