@@ -48,8 +48,7 @@ except buildexception.SharedLibMissError as exobj:
     print ("[" + RED + "!" + WHITE + "] " +
            ("The development package for " + exobj.libname +
             " is missing. Please download it and restart the compilation."
-            " Now if you want, you can provide the exact command for Debian-based systems."
-            ' For example, "if you are on Debian-based system: \'apt-get install{}\'."'.format(
+            "If you are on Debian-based system: \'apt-get install{}\'.".format(
                 "".join(" " + package for package in exobj.packages))))
     with buildcommon.nostdout():
         setup(
