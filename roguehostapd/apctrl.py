@@ -3,6 +3,9 @@
 This module was made to wrap the hostapd
 """
 
+from builtins import map
+from builtins import range
+from builtins import object
 import os
 import threading
 import ctypes

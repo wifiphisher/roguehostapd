@@ -69,7 +69,7 @@ def get_configuration_dicts(arg_dict):
     config_obj.init_config()
     hostapd_dict = {}
     options = {}
-    for key, val in arg_dict.iteritems():
+    for key, val in list(arg_dict.items()):
         if key in config_obj.configuration_dict:
             hostapd_dict[key] = val
         elif key in config_obj.options:

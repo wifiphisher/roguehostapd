@@ -2,11 +2,15 @@
 Module handles hostapd configuration
 """
 
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import object
 import re
 import collections
 import os
 import json
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 def get_default_settings():
     """
@@ -164,7 +168,7 @@ class HostapdConfig(object):
         :rtype: None
         """
 
-        for key, value in config_dict.iteritems():
+        for key, value in list(config_dict.items()):
             if (key in self.configuration_dict) and value:
                 self.configuration_dict[key] = value
             elif key not in self.configuration_dict:
@@ -225,6 +229,6 @@ class HostapdConfig(object):
         self.update_options(options)
         self.update_configs(config_dict)
         with open(ROGUEHOSTAPD_RUNTIME_CONFIGPATH, 'w') as conf:
-            for key, value in self.configuration_dict.iteritems():
+            for key, value in list(self.configuration_dict.items()):
                 if value and key not in self.custom_action:
                     conf.write(key + '=' + str(value) + '\n')
