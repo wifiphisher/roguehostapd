@@ -29,24 +29,23 @@ URL = 'https://github.com/wifiphisher/roguehostapd'
 AUTHOR = 'Anakin'
 
 try:
-    with redirect_stdout(devnull):
-        EXT_MODULE = buildcommon.get_extension_module()
-        setup(
-            name=NAME,
-            packages=PACKAGES,
-            package_dir=PACKAGE_DIR,
-            package_data=PACKAGE_DATA,
-            version=VERSION,
-            description=DESCRIPTION,
-            url=URL,
-            author=AUTHOR,
-            install_requires=[],
-            zip_safe=False,
-            cmdclass={
-                'build_ext': build_ext,
-                'install': install
-            },
-            ext_modules=EXT_MODULE)
+    EXT_MODULE = buildcommon.get_extension_module()
+    setup(
+        name=NAME,
+        packages=PACKAGES,
+        package_dir=PACKAGE_DIR,
+        package_data=PACKAGE_DATA,
+        version=VERSION,
+        description=DESCRIPTION,
+        url=URL,
+        author=AUTHOR,
+        install_requires=[],
+        zip_safe=False,
+        cmdclass={
+            'build_ext': build_ext,
+            'install': install
+        },
+        ext_modules=EXT_MODULE)
 except buildexception.SharedLibMissError as exobj:
     print("[" + RED + "!" + WHITE + "] " +
           ("The development package for " + exobj.libname +
