@@ -29,8 +29,8 @@ URL = 'https://github.com/wifiphisher/roguehostapd'
 AUTHOR = 'Anakin'
 
 try:
-    EXT_MODULE = buildcommon.get_extension_module()
     with redirect_stdout(devnull):
+        EXT_MODULE = buildcommon.get_extension_module()
         setup(
             name=NAME,
             packages=PACKAGES,
