@@ -2,8 +2,6 @@
 Module defines the utility functions used in roguehostapd
 """
 
-import contextlib
-import io
 import os
 import sys
 import shutil
@@ -49,18 +47,6 @@ LIBNAME_CODE_DICT = {
     "openssl": OPENSSL_CODE
 }
 
-@contextlib.contextmanager
-def nostdout():
-    """
-    Hide the stdout in the specific context
-
-    :return: None
-    :rtype: None
-    """
-    save_stdout = sys.stdout
-    sys.stdout = io.BytesIO()
-    yield
-    sys.stdout = save_stdout
 
 def check_required_library(libname, libraries=None, include_dir=None):
     """
