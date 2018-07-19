@@ -2,10 +2,6 @@
 Module handles hostapd configuration
 """
 
-from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import object
 import re
 import collections
 import os

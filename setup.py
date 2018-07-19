@@ -39,7 +39,7 @@ try:
             description=DESCRIPTION,
             url=URL,
             author=AUTHOR,
-            install_requires=["future"],
+            install_requires=["future", "configparser"],
             zip_safe=False,
             cmdclass={'build_ext': build_ext,
                       'install': install},
