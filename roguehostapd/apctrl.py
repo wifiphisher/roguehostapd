@@ -6,7 +6,7 @@ This module was made to wrap the hostapd
 import os
 import threading
 import ctypes
-from .config.hostapdconfig import (
+from roguehostapd.config.hostapdconfig import (
     HostapdConfig, HOSTAPD_EXECUTION_PATH, ROGUEHOSTAPD_RUNTIME_CONFIGPATH,
     HOSTAPD_LIBPATH, ROGUEHOSTAPD_DENY_MACS_CONFIGPATH)
 
@@ -138,7 +138,10 @@ class Hostapd(object):
         # update the hostapd configuration based on user input
         self.create_hostapd_conf_file(hostapd_config, options)
         # get the hostapd command to lunch the hostapd
-        hostapd_cmd = [HOSTAPD_EXECUTION_PATH, ROGUEHOSTAPD_RUNTIME_CONFIGPATH]
+        hostapd_cmd = [
+            HOSTAPD_EXECUTION_PATH.encode("utf-8"),
+            ROGUEHOSTAPD_RUNTIME_CONFIGPATH.encode("utf-8")
+        ]
         for key in self.config_obj.options:
             if self.config_obj.options[key]:
                 hostapd_cmd += self.config_obj.options[key]

@@ -190,24 +190,24 @@ class HostapdConfig(object):
 
         for key in self.options:
             if key in options and not options[key]:
-                self.options[key] = ''
+                self.options[key] = b''
             elif (key in self.options and self.options[key]) or\
                     (key in options and options[key]):
                 if key == 'debug_verbose':
-                    self.options['debug_verbose'] = tuple(['-ddd'])
+                    self.options['debug_verbose'] = tuple([b'-ddd'])
                 elif key == 'key_data':
-                    self.options[key] = tuple(['-K'])
+                    self.options[key] = tuple([b'-K'])
                 elif key == 'timestamp':
-                    self.options[key] = tuple(['-t'])
+                    self.options[key] = tuple([b'-t'])
                 elif key == 'version':
-                    self.options[key] = tuple(['-v'])
+                    self.options[key] = tuple([b'-v'])
                 elif key == 'mute':
-                    self.options[key] = tuple(['-s'])
+                    self.options[key] = tuple([b'-s'])
                 elif key == 'eloop_term_disable':
-                    self.options[key] = tuple(['-E'])
+                    self.options[key] = tuple([b'-E'])
             elif key in self.options and not self.options[key]:
-                self.options[key] = ''
-                
+                self.options[key] = b''
+
     def write_configs(self, config_dict, options):
         """
         Write the configurations to the file
