@@ -33,7 +33,7 @@ DEFAULT_SETTINGS = get_default_settings()
 # the roguehostapd package
 TOP_DIR = os.path.dirname(CONFIG_DIR)
 HOSTAPD_DIR = os.path.join(TOP_DIR, "hostapd-2_6")
-HOSTAPD_LIBPATH = os.path.join(HOSTAPD_DIR, 'hostapd', 'libhostapd.so')
+HOSTAPD_LIBPATH = os.path.join(HOSTAPD_DIR, 'hostapd', 'libhostapd.cpython-36m-x86_64-linux-gnu.so')
 HOSTAPD_EXECUTION_PATH = os.path.join(HOSTAPD_DIR, 'hostapd', 'hostapd')
 # terminal colors
 WHITE = "\033[0m"
