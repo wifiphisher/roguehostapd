@@ -10,8 +10,6 @@ except ImportError:
     from distutils.core import setup
     from distutils.command.install import install
 from distutils.command.build_ext import build_ext
-from contextlib import redirect_stdout
-from os import devnull
 import roguehostapd.buildutil.buildcommon as buildcommon
 import roguehostapd.buildutil.buildexception as buildexception
 from roguehostapd.config.hostapdconfig import WHITE, RED

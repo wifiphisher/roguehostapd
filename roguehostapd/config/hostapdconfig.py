@@ -8,6 +8,7 @@ import os
 import json
 from configparser import SafeConfigParser
 
+
 def get_default_settings():
     """
     Get the project default settings
@@ -20,6 +21,7 @@ def get_default_settings():
         for key, val in config.items(section):
             default_settings[section][key] = json.loads(val)
     return default_settings
+
 
 # the configuration paths
 CONFIG_DIR = os.path.dirname(__file__)
@@ -205,6 +207,7 @@ class HostapdConfig(object):
                     self.options[key] = tuple(['-E'])
             elif key in self.options and not self.options[key]:
                 self.options[key] = ''
+                
     def write_configs(self, config_dict, options):
         """
         Write the configurations to the file
