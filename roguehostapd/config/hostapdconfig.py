@@ -6,7 +6,10 @@ import re
 import collections
 import os
 import json
-from ConfigParser import SafeConfigParser
+try:
+    from configparser import SafeConfigParser  # Python 3
+except ImportError:
+    from ConfigParser import SafeConfigParser  # Python 2
 
 def get_default_settings():
     """
