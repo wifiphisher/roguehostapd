@@ -2,5 +2,11 @@ language: python
 python:
   - 2.7
   - 3.8
+addons:
+  apt:
+    update: true
+    packages:
+      - libnl-3-dev
+      - libnl-genl-3-dev
 install: pip install flake8
 script: python setup.py install # Build the shared library of hostapd
