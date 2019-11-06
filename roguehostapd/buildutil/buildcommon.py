@@ -57,10 +57,10 @@ def nostdout():
     :return: None
     :rtype: None
     """
-    save_stdout = sys.stdout
-    sys.stdout = io.BytesIO()
+    #save_stdout = sys.stdout
+    #sys.stdout = io.BytesIO()
     yield
-    sys.stdout = save_stdout
+    #sys.stdout = save_stdout
 
 def check_required_library(libname, libraries=None, include_dir=None):
     """
