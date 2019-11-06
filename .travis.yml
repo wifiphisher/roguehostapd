@@ -9,4 +9,5 @@ addons:
       - libnl-3-dev
       - libnl-genl-3-dev
 install: pip install flake8
+before_script: flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
 script: python setup.py install # Build the shared library of hostapd
