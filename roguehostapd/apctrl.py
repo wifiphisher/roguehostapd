@@ -6,9 +6,19 @@ This module was made to wrap the hostapd
 import os
 import threading
 import ctypes
-from roguehostapd.config.hostapdconfig import HostapdConfig
-import roguehostapd.config.hostapdconfig as hostapdconfig
+import glob
+from roguehostapd.config.hostapdconfig import (
+    HostapdConfig, HOSTAPD_EXECUTION_PATH, HOSTAPD_DIR, 
+    ROGUEHOSTAPD_RUNTIME_CONFIGPATH, 
+    ROGUEHOSTAPD_DENY_MACS_CONFIGPATH)
 
+def find_so():
+    """
+    Find roguehostapd .so file
+    """
+
+    so = glob.glob(HOSTAPD_DIR + '/hostapd/*.so')
+    return so[0]
 
 class KarmaData(ctypes.Structure):
     """
@@ -17,12 +27,11 @@ class KarmaData(ctypes.Structure):
     pass
 
 
-KarmaData._fields_ = [
-    ("is_assoc", ctypes.c_ubyte),
-    ("ssid_len", ctypes.c_size_t),
-    ("ssid", ctypes.c_ubyte * 32),
-    ("mac_addr", ctypes.c_ubyte * 6),
-    ("next_data", ctypes.POINTER(KarmaData))]
+KarmaData._fields_ = [("is_assoc", ctypes.c_ubyte), ("ssid_len",
+                                                     ctypes.c_size_t),
+                      ("ssid", ctypes.c_ubyte * 32), ("mac_addr",
+                                                      ctypes.c_ubyte * 6),
+                      ("next_data", ctypes.POINTER(KarmaData))]
 
 
 class Hostapd(object):
@@ -138,8 +147,10 @@ class Hostapd(object):
         # update the hostapd configuration based on user input
         self.create_hostapd_conf_file(hostapd_config, options)
         # get the hostapd command to lunch the hostapd
-        hostapd_cmd = [hostapdconfig.HOSTAPD_EXECUTION_PATH,
-                       hostapdconfig.ROGUEHOSTAPD_RUNTIME_CONFIGPATH]
+        hostapd_cmd = [
+            HOSTAPD_EXECUTION_PATH.encode("utf-8"),
+            ROGUEHOSTAPD_RUNTIME_CONFIGPATH.encode("utf-8")
+        ]
         for key in self.config_obj.options:
             if self.config_obj.options[key]:
                 hostapd_cmd += self.config_obj.options[key]
@@ -148,8 +159,8 @@ class Hostapd(object):
         hostapd_cmd = str_arr_type(*hostapd_cmd)
 
         # get the hostapd shared library
-        self.hostapd_lib = ctypes.cdll.LoadLibrary(
-            hostapdconfig.HOSTAPD_LIBPATH)
+        libpath = find_so()
+        self.hostapd_lib = ctypes.cdll.LoadLibrary(libpath)
 
         # init hostapd lib info
         self.hostapd_lib.get_assoc_karma_data.restype = ctypes.POINTER(
@@ -175,10 +186,11 @@ class Hostapd(object):
         if self.hostapd_thread.is_alive():
             self.hostapd_thread.join(5)
 
-        if os.path.isfile(hostapdconfig.ROGUEHOSTAPD_RUNTIME_CONFIGPATH):
-            os.remove(hostapdconfig.ROGUEHOSTAPD_RUNTIME_CONFIGPATH)
-        if os.path.isfile(hostapdconfig.ROGUEHOSTAPD_DENY_MACS_CONFIGPATH):
-            os.remove(hostapdconfig.ROGUEHOSTAPD_DENY_MACS_CONFIGPATH)
+        if os.path.isfile(ROGUEHOSTAPD_RUNTIME_CONFIGPATH):
+            os.remove(ROGUEHOSTAPD_RUNTIME_CONFIGPATH)
+        if os.path.isfile(ROGUEHOSTAPD_DENY_MACS_CONFIGPATH):
+            os.remove(ROGUEHOSTAPD_DENY_MACS_CONFIGPATH)
+
 
 if __name__ == '__main__':
 
@@ -187,7 +199,7 @@ if __name__ == '__main__':
         'interface': 'wlan0',
         'karma_enable': 1,
         'deny_macs': ['00:00:00:11:22:33']
-        }
+    }
 
     HOSTAPD_OPTION_DICT = {
         'debug_verbose': True,
@@ -195,7 +207,8 @@ if __name__ == '__main__':
         'timestamp': False,
         'version': False,
         'mute': True,
-        'eloop_term_disable': True}
+        'eloop_term_disable': True
+    }
     HOSTAPD_OBJ = Hostapd()
     HOSTAPD_OBJ.start(HOSTAPD_CONFIG_DICT, HOSTAPD_OPTION_DICT)
     import time

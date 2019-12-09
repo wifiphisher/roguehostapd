@@ -2,7 +2,6 @@
 Module defines the custom exceptions for building hostapd
 """
 
-
 class SharedLibMissError(Exception):
     """
     Define the Netlink shared library missing exception

@@ -6,7 +6,6 @@
 # This software may be distributed under the terms of the BSD license.
 # See README for more details.
 
-from __future__ import print_function
 import os
 import sys
 import time

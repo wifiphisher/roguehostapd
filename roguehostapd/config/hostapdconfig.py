@@ -11,6 +11,7 @@ try:
 except ImportError:
     from ConfigParser import SafeConfigParser  # Python 2
 
+
 def get_default_settings():
     """
     Get the project default settings
@@ -34,7 +35,6 @@ DEFAULT_SETTINGS = get_default_settings()
 # the roguehostapd package
 TOP_DIR = os.path.dirname(CONFIG_DIR)
 HOSTAPD_DIR = os.path.join(TOP_DIR, "hostapd-2_6")
-HOSTAPD_LIBPATH = os.path.join(HOSTAPD_DIR, 'hostapd', 'libhostapd.so')
 HOSTAPD_EXECUTION_PATH = os.path.join(HOSTAPD_DIR, 'hostapd', 'hostapd')
 # terminal colors
 WHITE = "\033[0m"
@@ -167,7 +167,7 @@ class HostapdConfig(object):
         :rtype: None
         """
 
-        for key, value in config_dict.iteritems():
+        for key, value in list(config_dict.items()):
             if (key in self.configuration_dict) and value:
                 self.configuration_dict[key] = value
             elif key not in self.configuration_dict:
@@ -191,23 +191,24 @@ class HostapdConfig(object):
 
         for key in self.options:
             if key in options and not options[key]:
-                self.options[key] = ''
+                self.options[key] = b''
             elif (key in self.options and self.options[key]) or\
                     (key in options and options[key]):
                 if key == 'debug_verbose':
-                    self.options['debug_verbose'] = tuple(['-ddd'])
+                    self.options['debug_verbose'] = tuple([b'-ddd'])
                 elif key == 'key_data':
-                    self.options[key] = tuple(['-K'])
+                    self.options[key] = tuple([b'-K'])
                 elif key == 'timestamp':
-                    self.options[key] = tuple(['-t'])
+                    self.options[key] = tuple([b'-t'])
                 elif key == 'version':
-                    self.options[key] = tuple(['-v'])
+                    self.options[key] = tuple([b'-v'])
                 elif key == 'mute':
-                    self.options[key] = tuple(['-s'])
+                    self.options[key] = tuple([b'-s'])
                 elif key == 'eloop_term_disable':
-                    self.options[key] = tuple(['-E'])
+                    self.options[key] = tuple([b'-E'])
             elif key in self.options and not self.options[key]:
-                self.options[key] = ''
+                self.options[key] = b''
+
     def write_configs(self, config_dict, options):
         """
         Write the configurations to the file
@@ -228,6 +229,6 @@ class HostapdConfig(object):
         self.update_options(options)
         self.update_configs(config_dict)
         with open(ROGUEHOSTAPD_RUNTIME_CONFIGPATH, 'w') as conf:
-            for key, value in self.configuration_dict.iteritems():
+            for key, value in list(self.configuration_dict.items()):
                 if value and key not in self.custom_action:
                     conf.write(key + '=' + str(value) + '\n')
